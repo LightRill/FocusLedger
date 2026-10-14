@@ -1,6 +1,6 @@
 # FocusLedger · 专注时账
 
-Windows 本地学习工作时间记录工具，当前版本 v0.3.1。默认统计 VS Code、VS Code Insiders、Codex 与 ChatGPT 桌面应用；Zotero 已预置但默认关闭。
+Windows 本地学习工作时间记录工具，当前版本 v0.3.2。默认统计 VS Code、VS Code Insiders、Codex 与 ChatGPT 桌面应用；Zotero 已预置但默认关闭。
 
 ## 界面预览
 
@@ -144,3 +144,8 @@ Copyright (C) 2026 LightRill。项目采用 **GPL-3.0-only**，详见 [LICENSE](
 ## 图标源文件
 
 应用使用本项目原创的青绿色时间环图标。SVG、PNG 和 ICO 位于 src/FocusLedger.App/Assets，随项目采用 GPL-3.0-only。ICO 包含 16、20、24、32、40、48、64、128、256 像素的独立图层。修改 SVG 后，可在 Windows PowerShell 中运行 tools/Generate-Icon.ps1，使用系统 WPF 生成 PNG 和 ICO，无需额外依赖。
+
+
+## EXE 图标核对
+
+发布脚本会直接读取 EXE 的原生图标资源，与源 ICO 的九个尺寸逐一比较，并通知资源管理器刷新该文件。无需删除系统图标缓存或重启资源管理器。如果已打开的文件夹仍显示旧图标，可按 F5 刷新。独立核对可运行 tools/Verify-ExecutableIcon.ps1；加上 -RefreshShell 会定向刷新发布 EXE 的图标。

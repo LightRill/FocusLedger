@@ -24,4 +24,5 @@ if ($Test) {
 if ($Publish) {
     & $dotnet $msbuild "$projectRoot\src\FocusLedger.App\FocusLedger.App.csproj" -t:Publish -p:Configuration=Release -p:UseSharedCompilation=false "-p:PublishDir=$projectRoot\publish\" -verbosity:minimal -nologo
     if ($LASTEXITCODE -ne 0) { throw 'Publish failed.' }
+    & "$projectRoot\tools\Verify-ExecutableIcon.ps1" -Exe "$projectRoot\publish\FocusLedger.exe" -RefreshShell
 }

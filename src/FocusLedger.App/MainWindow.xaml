@@ -19,7 +19,7 @@
     <StackPanel DockPanel.Dock="Bottom">
      <TextBlock Text="LOCAL FIRST" Foreground="{DynamicResource SidebarMuted}" FontSize="10" FontWeight="Bold" Margin="0,0,0,8"/>
      <TextBlock Text="数据只留在这台电脑" Foreground="{DynamicResource SidebarInk}" FontSize="11"/>
-     <TextBlock Text="v0.3.1 · Windows" Foreground="{DynamicResource SidebarMuted}" FontSize="10" Margin="0,6,0,0"/>
+     <TextBlock Text="v0.3.2 · Windows" Foreground="{DynamicResource SidebarMuted}" FontSize="10" Margin="0,6,0,0"/>
     </StackPanel>
     <StackPanel>
      <Image Source="Assets/focusledger.png" Width="48" Height="48" HorizontalAlignment="Left" Margin="0,0,0,18" RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -63,11 +63,11 @@
       <DockPanel Margin="0,0,0,14"><StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button Content="编辑选中" Click="Edit_Click" Padding="10,6"/><Button Content="删除选中" Click="Delete_Click" Padding="10,6" Margin="0"/></StackPanel><StackPanel><TextBlock x:Name="TimelineTitle" Text="时间明细" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="仅列有效片段；空闲和未采集区间不计入总时长。" Style="{StaticResource Caption}" Margin="0,6,0,0"/></StackPanel></DockPanel>
       <DataGrid x:Name="Timeline" IsReadOnly="True" Height="205" MouseDoubleClick="Timeline_DoubleClick">
        <DataGrid.Columns>
-        <DataGridTextColumn Header="开始" Binding="{Binding StartText}" Width="145"/>
-        <DataGridTextColumn Header="结束" Binding="{Binding EndText}" Width="145"/>
-        <DataGridTextColumn Header="软件" Binding="{Binding App}" Width="*"/>
-        <DataGridTextColumn Header="时长" Binding="{Binding Duration}" Width="125"/>
-        <DataGridTextColumn Header="来源" Binding="{Binding Source}" Width="100"/>
+        <DataGridTextColumn ElementStyle="{StaticResource TableText}" EditingElementStyle="{StaticResource TableEditor}" Header="开始" Binding="{Binding StartText}" Width="145"/>
+        <DataGridTextColumn ElementStyle="{StaticResource TableText}" EditingElementStyle="{StaticResource TableEditor}" Header="结束" Binding="{Binding EndText}" Width="145"/>
+        <DataGridTextColumn ElementStyle="{StaticResource TableText}" EditingElementStyle="{StaticResource TableEditor}" Header="软件" Binding="{Binding App}" Width="*"/>
+        <DataGridTextColumn ElementStyle="{StaticResource TableText}" EditingElementStyle="{StaticResource TableEditor}" Header="时长" Binding="{Binding Duration}" Width="125"/>
+        <DataGridTextColumn ElementStyle="{StaticResource TableText}" EditingElementStyle="{StaticResource TableEditor}" Header="来源" Binding="{Binding Source}" Width="100"/>
        </DataGrid.Columns>
       </DataGrid>
       <TextBlock x:Name="EmptyHint" Text="还没有记录。切换到 VS Code、Codex 或 ChatGPT 后会自动开始。" Foreground="{DynamicResource Muted}" Margin="0,12,0,0"/>
@@ -78,7 +78,7 @@
   </ScrollViewer>
   <ContentControl x:Name="SettingsPage" Visibility="Collapsed"/>
   <ScrollViewer x:Name="BackupPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
-   <StackPanel Margin="30" MaxWidth="920" HorizontalAlignment="Stretch">
+   <StackPanel Margin="30" HorizontalAlignment="Stretch">
     <TextBlock Text="为投入，留一份副本。" FontSize="25" FontWeight="SemiBold"/>
     <TextBlock Text="在这里备份数据库与设置，记录时也能安全生成副本。" Style="{StaticResource Caption}" Margin="0,10,0,28"/>
     <Border Style="{StaticResource Card}" Margin="0,0,0,20"><StackPanel>
@@ -97,7 +97,7 @@
     <Border Background="{DynamicResource Soft}" CornerRadius="12" Padding="22"><TextBlock Text="备份完成后，可把整份备份文件夹复制到其他磁盘。导出当前日、周、月、年的表格，请前往概览 → 导出 CSV。" TextWrapping="Wrap" LineHeight="25"/></Border>
    </StackPanel>
   </ScrollViewer>
-  <ScrollViewer x:Name="ManualPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto"><ContentControl x:Name="ManualHost" Width="660" HorizontalAlignment="Left" Margin="10,0"/></ScrollViewer>
+  <ScrollViewer x:Name="ManualPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto"><ContentControl x:Name="ManualHost" Width="660" HorizontalAlignment="Left" Margin="0"/></ScrollViewer>
   </Grid>
  </Grid>
 </Window>

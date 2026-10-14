@@ -261,10 +261,13 @@ public partial class App : Application
         {
             window!.SetPeriodForCheck(DateTime.Today.AddDays(-1), Period.Day);
             SaveImage(window, Path.Combine(DataDirectory, "today.png"));
+            LayoutChecks.CheckTable(window.Timeline);
             window.SetPeriodForCheck(DateTime.Today, Period.Year);
             SaveImage(window, Path.Combine(DataDirectory, "year.png"));
             var settingsView = window.OpenSettings();
             SaveImage(window, Path.Combine(DataDirectory, "settings.png"));
+            LayoutChecks.CheckTable(settingsView.RulesGrid);
+            LayoutChecks.CheckEditor(settingsView);
             settingsView.ShowDataTab(); SaveImage(window, Path.Combine(DataDirectory, "data-settings.png"));
             settingsView.ShowThemeTab(); SaveImage(window, Path.Combine(DataDirectory, "themes.png"));
             settingsView.DefaultIdleInput.Text = "7";
@@ -273,6 +276,12 @@ public partial class App : Application
             if (tracker!.Settings.Theme != "Dark" || tracker.Settings.DefaultIdleMinutes != 7 || SettingsFile.Load(SettingsPath).Theme != "Dark")
                 throw new Exception("Inline settings failed to save.");
             SaveImage(window, Path.Combine(DataDirectory, "settings-dark.png"));
+            LayoutChecks.CheckTable(window.OpenSettings().RulesGrid);
+            var previousWidth = window.Width; var previousHeight = window.Height;
+            window.Width = window.MinWidth; window.Height = window.MinHeight;
+            SaveImage(window, Path.Combine(DataDirectory, "settings-compact.png"));
+            LayoutChecks.CheckTable(window.OpenSettings().RulesGrid);
+            window.Width = previousWidth; window.Height = previousHeight;
             window.OpenBackup();
             var backup = window.CreateBackup(Path.Combine(checkRoot, "backups"));
             using (var db = new LedgerStore(Path.Combine(backup, "focusledger.db")))
@@ -303,7 +312,7 @@ public partial class App : Application
             ApplySettings(changedSettings, checkRoot, true);
             if (!DataLocation.Same(DataDirectory, checkRoot) || tracker.Settings.DefaultIdleMinutes != 3)
                 throw new InvalidOperationException("Switching to existing data failed.");
-            File.WriteAllText(Path.Combine(checkRoot, "self-check.txt"), $"PASS\nDatabase integrity: {store.IntegrityCheck()}\nNative capture: {nativeSample.Kind}\nUI: inline overview, settings, themes, backup, manual entry rendered; three palettes; settings save and backup verified; single window; custom tray icon loaded\nChrome: caption and resize hit tests, minimize/maximize/restore/hide, themed scrollbar page-down and mouse wheel passed\nData migration and switching existing ledger passed\nNo tracking timer started\n");
+            File.WriteAllText(Path.Combine(checkRoot, "self-check.txt"), $"PASS\nDatabase integrity: {store.IntegrityCheck()}\nNative capture: {nativeSample.Kind}\nUI: inline overview, settings, themes, backup, manual entry rendered; three palettes; settings save and backup verified; single window; custom tray icon loaded\nLayout: table display and editor vertical centers checked in normal/compact layouts\nChrome: caption and resize hit tests, minimize/maximize/restore/hide, themed scrollbar page-down and mouse wheel passed\nData migration and switching existing ledger passed\nNo tracking timer started\n");
             window.AllowClose = true;
             Shutdown(0);
         }
