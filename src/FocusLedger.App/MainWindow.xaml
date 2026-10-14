@@ -18,7 +18,7 @@
    <DockPanel>
     <StackPanel DockPanel.Dock="Bottom">
      <TextBlock Text="数据只留在这台电脑" Style="{StaticResource SidebarFooter}"/>
-     <TextBlock Text="v0.3.11 · Windows" Style="{StaticResource SidebarFooter}" Margin="0,6,0,0"/>
+     <TextBlock Text="v0.3.12 · Windows" Style="{StaticResource SidebarFooter}" Margin="0,6,0,0"/>
     </StackPanel>
     <StackPanel>
      <Image Source="Assets/focusledger.png" Width="48" Height="48" HorizontalAlignment="Left" Margin="0,0,0,18" RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -75,7 +75,7 @@
         <DataGridTextColumn ElementStyle="{StaticResource TableText}" EditingElementStyle="{StaticResource TableEditor}" Header="来源" Binding="{Binding Source}" Width="100"/>
        </DataGrid.Columns>
       </DataGrid>
-      <TextBlock x:Name="EmptyHint" Text="还没有记录。切换到 VS Code、Codex 或 ChatGPT 后会自动开始。" Foreground="{DynamicResource Muted}" Margin="0,12,0,0"/>
+      <TextBlock x:Name="EmptyHint" Text="还没有记录。可在设置中添加需要统计的软件，使用时自动计时。" Foreground="{DynamicResource Muted}" Margin="0,12,0,0"/>
      </StackPanel>
     </Border>
     <TextBlock x:Name="FooterText" Text="关闭窗口后继续在托盘记录 · 从托盘菜单可彻底退出" Style="{StaticResource Caption}" Margin="0,15,0,0"/>
