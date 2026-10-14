@@ -5,12 +5,7 @@
    <Setter Property="Foreground" Value="{DynamicResource Muted}"/>
    <Setter Property="TextDecorations" Value="{x:Null}"/>
    <Setter Property="Cursor" Value="Hand"/>
-   <Setter Property="ToolTip" Value="打开 FocusLedger GitHub 仓库"/>
    <Setter Property="AutomationProperties.Name" Value="打开 FocusLedger GitHub 仓库"/>
-   <Style.Triggers>
-    <Trigger Property="IsMouseOver" Value="True"><Setter Property="TextDecorations" Value="Underline"/></Trigger>
-    <Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="TextDecorations" Value="Underline"/></Trigger>
-   </Style.Triggers>
   </Style>
  </Window.Resources>
  <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="38" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/></shell:WindowChrome.WindowChrome>
@@ -31,7 +26,7 @@
    <DockPanel>
     <StackPanel DockPanel.Dock="Bottom">
      <TextBlock Text="数据只留在这台电脑" Style="{StaticResource SidebarFooter}"/>
-     <TextBlock Text="v0.3.13 · Windows" Style="{StaticResource SidebarFooter}" Margin="0,6,0,0"/>
+     <TextBlock Text="v0.3.14 · Windows" Style="{StaticResource SidebarFooter}" Margin="0,6,0,0"/>
     </StackPanel>
     <StackPanel>
      <Image Source="Assets/focusledger.png" Width="48" Height="48" HorizontalAlignment="Left" Margin="0,0,0,18" RenderOptions.BitmapScalingMode="HighQuality"/>
