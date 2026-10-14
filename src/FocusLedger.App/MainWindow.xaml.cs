@@ -59,6 +59,19 @@ public partial class MainWindow : Window
         }
     }
 
+    private void Repository_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+    {
+        e.Handled = true;
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/LightRill/FocusLedger") { UseShellExecute = true });
+        }
+        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException)
+        {
+            MessageBox.Show(this, "无法打开默认浏览器，请手动访问：https://github.com/LightRill/FocusLedger", "打开项目仓库", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
     private void Minimize_Click(object sender, RoutedEventArgs e) => SystemCommands.MinimizeWindow(this);
     private void Maximize_Click(object sender, RoutedEventArgs e)
     {

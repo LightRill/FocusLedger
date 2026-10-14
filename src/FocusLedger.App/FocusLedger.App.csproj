@@ -5,7 +5,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>FocusLedger</AssemblyName>
-    <Version>0.3.12</Version>
+    <Version>0.3.13</Version>
     <ApplicationIcon>Assets/focusledger.ico</ApplicationIcon>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>false</SelfContained>

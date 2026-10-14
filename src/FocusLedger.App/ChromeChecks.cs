@@ -34,6 +34,7 @@ internal static class ChromeChecks
             var packed = (nint)(((int)screen.X & 0xFFFF) | (((int)screen.Y & 0xFFFF) << 16));
             return (int)SendMessage(hwnd, 0x0084, 0, packed); // WM_NCHITTEST
         }
+        Require(Hit(window.RepositoryCaption.TranslatePoint(new Point(window.RepositoryCaption.ActualWidth / 2, window.RepositoryCaption.ActualHeight / 2), window)) == 1, "Repository title does not receive clicks (HTCLIENT).");
         Require(Hit(new Point(300, 20)) == 2, "Title bar is not draggable (HTCAPTION).");
         Require(Hit(window.CloseButton.TranslatePoint(new Point(23, 18), window)) == 1, "Caption buttons do not receive clicks (HTCLIENT).");
         Require(Hit(new Point(1, 160)) == 10, "Left edge is not resizable (HTLEFT).");
