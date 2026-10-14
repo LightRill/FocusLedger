@@ -21,10 +21,16 @@
       </DataGrid.Columns>
      </DataGrid>
      <WrapPanel Grid.Row="2"><Button Content="添加 .exe" Click="AddExecutable_Click" Margin="0,0,8,8"/>
-      <Grid Width="220" Margin="0,0,8,8"><ComboBox x:Name="Processes" IsEditable="False" AutomationProperties.Name="选择运行中的软件"/>
-       <TextBlock Text="请选择运行中的软件" Margin="10,0,28,0" VerticalAlignment="Center" Foreground="{DynamicResource Muted}" IsHitTestVisible="False"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=Processes}" Value="-1"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
-      </Grid>
-      <Button Content="添加运行中软件" Click="AddProcess_Click" Margin="0,0,8,8"/><Button Content="刷新列表" Click="RefreshProcesses_Click" Margin="0,0,8,8"/><Button Content="移除选中" Click="Remove_Click" Margin="0,0,0,8"/></WrapPanel>
+      <Button x:Name="ProcessButton" Click="AddProcess_Click" Margin="0,0,8,8" AutomationProperties.Name="添加运行中的组件">
+       <StackPanel Orientation="Horizontal"><TextBlock Text="添加运行中的组件"/><TextBlock Text="⌄" Margin="16,0,0,0" Foreground="{DynamicResource Muted}"/></StackPanel>
+       <Button.ContextMenu>
+        <ContextMenu x:Name="ProcessMenu" Placement="Bottom" Background="{DynamicResource Surface}" Foreground="{DynamicResource Ink}" BorderBrush="{DynamicResource Line}" FontFamily="{DynamicResource AppFont}" FontSize="13" MinWidth="220" MaxHeight="320" Padding="4">
+         <ContextMenu.Template><ControlTemplate TargetType="ContextMenu"><Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="{TemplateBinding Padding}"><ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True"><ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle"/></ScrollViewer></Border></ControlTemplate></ContextMenu.Template>
+         <ContextMenu.Resources><Style TargetType="MenuItem"><Setter Property="Padding" Value="12,10"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="MenuItem"><Border x:Name="Item" Background="Transparent" CornerRadius="5" Padding="{TemplateBinding Padding}"><ContentPresenter ContentSource="Header" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsHighlighted" Value="True"><Setter TargetName="Item" Property="Background" Value="{DynamicResource Soft}"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style></ContextMenu.Resources>
+        </ContextMenu>
+       </Button.ContextMenu>
+      </Button>
+      <Button Content="移除选中" Click="Remove_Click" Margin="0,0,0,8"/></WrapPanel>
     </Grid>
    </TabItem>
    <TabItem Header="数据与启动" Padding="18,9">

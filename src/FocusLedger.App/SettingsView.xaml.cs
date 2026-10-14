@@ -25,22 +25,25 @@ public partial class SettingsView : UserControl
         DataDirectoryInput.Text = dataDirectory;
         DefaultPathText.Text = "默认位置：程序 exe 所在目录下的 data 文件夹。\n" + defaultDataDirectory;
         ThemeChoice.SelectedIndex = settings.Theme == "Dark" ? 2 : settings.Theme == "Ocean" ? 1 : 0;
-        LoadProcesses();
+        ProcessMenu.Opened += (_, _) => LoadProcesses();
     }
     private void LoadProcesses() => SetProcessChoices(WindowsActivity.VisibleProcesses());
     private void SetProcessChoices(string[] names)
     {
-        var previous = Processes.SelectedItem as string;
-        Processes.ItemsSource = names;
-        Processes.SelectedItem = names.FirstOrDefault(p => p.Equals(previous, StringComparison.OrdinalIgnoreCase));
+        ProcessMenu.Items.Clear();
+        foreach (var process in names)
+        {
+            var exists = rules.Any(r => r.ProcessName.Equals(process, StringComparison.OrdinalIgnoreCase));
+            var item = new MenuItem { Header = exists ? process + " · 已添加" : process, IsEnabled = !exists };
+            item.Click += (_, _) => Add(process);
+            ProcessMenu.Items.Add(item);
+        }
+        if (names.Length == 0) ProcessMenu.Items.Add(new MenuItem { Header = "暂无运行中的组件", IsEnabled = false });
     }
-    private void RefreshProcesses_Click(object sender, RoutedEventArgs e) => LoadProcesses();
     private void AddProcess_Click(object sender, RoutedEventArgs e)
     {
-        if (Processes.SelectedItem is string process) { Add(process); return; }
-        LoadProcesses();
-        ErrorText.Text = Processes.Items.Count == 0 ? "没有找到有窗口的运行中软件，请先打开目标软件后刷新，或使用添加 .exe。" : "请先在下拉列表中选择软件，再点击添加。";
-        if (Processes.Items.Count > 0) { Processes.Focus(); Processes.IsDropDownOpen = true; }
+        ProcessMenu.PlacementTarget = ProcessButton;
+        ProcessMenu.IsOpen = true;
     }
     private void AddExecutable_Click(object sender, RoutedEventArgs e)
     {
@@ -49,11 +52,12 @@ public partial class SettingsView : UserControl
     }
     private void Add(string process)
     {
-        if (rules.Any(r => r.ProcessName.Equals(process, StringComparison.OrdinalIgnoreCase))) { ErrorText.Text = "该进程已经在列表中。"; return; }
+        if (rules.FirstOrDefault(r => r.ProcessName.Equals(process, StringComparison.OrdinalIgnoreCase)) is AppRule existing)
+        { RulesGrid.SelectedItem = existing; RulesGrid.ScrollIntoView(existing); ErrorText.Text = ""; return; }
         if (!TryDefaultMinutes(out var minutes)) return;
         var rule = new Settings { DefaultIdleMinutes = minutes }.CreateRule(process);
         rules.Add(rule); RulesGrid.SelectedItem = rule; RulesGrid.ScrollIntoView(rule);
-        ErrorText.Text = $"已添加 {process}，点击保存设置后生效。";
+        ErrorText.Text = "";
     }
     private void Remove_Click(object sender, RoutedEventArgs e) { if (RulesGrid.SelectedItem is AppRule rule) rules.Remove(rule); }
     internal event Action? Saved;

@@ -11,21 +11,18 @@ public partial class SettingsView
         }
         try
         {
-            Require(Processes.SelectedIndex == -1, "no default process selection");
             AddProcess_Click(this, new RoutedEventArgs());
-            Require(rules.Count == before.Length, "clicking without selection must not add the first process");
-            Require(Processes.Items.Count == 0 || Processes.IsDropDownOpen, "click without selection opens the picker");
-            Processes.IsDropDownOpen = false;
+            Require(rules.Count == before.Length && ProcessMenu.IsOpen, "button opens menu without adding a default process");
             SetProcessChoices(["TestAppA", "TestAppB"]);
-            Processes.SelectedItem = "TestAppB";
-            AddProcess_Click(this, new RoutedEventArgs());
+            ((MenuItem)ProcessMenu.Items[1]).RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
             Require(rules.Count == before.Length + 1 && rules.Last().ProcessName == "TestAppB", "adds the explicitly selected app");
-            AddProcess_Click(this, new RoutedEventArgs());
-            Require(rules.Count == before.Length + 1, "duplicate selection is not added twice");
+            Require(ErrorText.Text == "", "successful addition produces no footer hint");
             SetProcessChoices(["TestAppA", "TestAppB", "TestAppC"]);
-            Require((string?)Processes.SelectedItem == "TestAppB", "refresh preserves selection");
-            SetProcessChoices(["TestAppA"]);
-            Require(Processes.SelectedIndex == -1, "closed app does not silently select another app");
+            Require(!((MenuItem)ProcessMenu.Items[1]).IsEnabled, "already added process is disabled in menu");
+            Add("TestAppB");
+            Require(rules.Count == before.Length + 1, "duplicate addition is prevented");
+            SetProcessChoices([]);
+            Require(ProcessMenu.Items.Count == 1 && !((MenuItem)ProcessMenu.Items[0]).IsEnabled, "empty list is explained inside menu");
             Require(WindowsActivity.ResolveHostedProcess("ApplicationFrameHost", ["ApplicationFrameHost", "CalculatorApp", "calculatorapp"]) == "CalculatorApp", "host resolves to real app");
             Require(WindowsActivity.ResolveHostedProcess("ApplicationFrameHost", ["ApplicationFrameHost", null]) is null, "unresolved host is omitted");
             Require(WindowsActivity.ResolveHostedProcess("ApplicationFrameHost", ["AppA", "AppB"]) is null, "ambiguous host is omitted");
@@ -34,9 +31,9 @@ public partial class SettingsView
         }
         finally
         {
-            Processes.IsDropDownOpen = false;
+            ProcessMenu.IsOpen = false;
             rules.Clear(); foreach (var rule in before) rules.Add(rule);
-            Processes.SelectedIndex = -1; LoadProcesses();
+            LoadProcesses();
             ErrorText.Text = "";
         }
     }
