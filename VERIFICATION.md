@@ -1,3 +1,11 @@
+# v0.3.10 验证
+
+- 离线编译和发布通过，EXE 图标检查及隔离界面自检通过。
+- 日期控件验证：输入 2024/2/29 可正确提交，按钮打开日历，上下月导航，年月视图可见性，选择年份和月份返回日期视图，日历选中日期同步到报表，关闭弹层。
+- 检查森野、晴空、夜航三套日历预览和托盘标题居中预览；检查日期输入框不再出现白色内框。
+- 模板遵循 WPF 官方 [Calendar](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/calendar) 和 [DatePicker](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/datepicker) 的控件部件约定。
+- 未更改计时核心，未安装依赖或修改日常记录。
+
 # v0.3.9 验证
 
 - 34/34 核心和数据库回归测试通过，离线发布及隔离界面自检通过。

@@ -18,7 +18,7 @@ internal static class TrayMenuStyle
             item.Margin = Forms.Padding.Empty;
             item.Size = new Drawing.Size(Dip(212), Dip(item is Forms.ToolStripSeparator ? 9 : item is Forms.ToolStripLabel ? 32 : 36));
             item.Padding = item is Forms.ToolStripSeparator ? Forms.Padding.Empty : new Forms.Padding(Dip(12), 0, Dip(12), 0);
-            item.TextAlign = Drawing.ContentAlignment.MiddleLeft;
+            item.TextAlign = item is Forms.ToolStripLabel ? Drawing.ContentAlignment.MiddleCenter : Drawing.ContentAlignment.MiddleLeft;
             item.ForeColor = ThemeManager.Native(item is Forms.ToolStripLabel ? "Muted" : "Ink");
         }
     }
@@ -29,7 +29,10 @@ internal static class TrayMenuStyle
         {
             // Use the whole row height instead of the menu's default baseline offset.
             e.TextRectangle = new Drawing.Rectangle(e.Item.Padding.Left, 0, e.Item.Width - e.Item.Padding.Horizontal, e.Item.Height);
-            e.TextFormat = Forms.TextFormatFlags.Left | Forms.TextFormatFlags.VerticalCenter | Forms.TextFormatFlags.SingleLine | Forms.TextFormatFlags.NoPrefix;
+            if (e.Item is Forms.ToolStripLabel && e.Item.Owner is { } owner)
+                e.TextRectangle = new Drawing.Rectangle(-e.Item.Bounds.Left, 0, owner.ClientSize.Width, e.Item.Height);
+            var alignment = e.Item is Forms.ToolStripLabel ? Forms.TextFormatFlags.HorizontalCenter : Forms.TextFormatFlags.Left;
+            e.TextFormat = alignment | Forms.TextFormatFlags.VerticalCenter | Forms.TextFormatFlags.SingleLine | Forms.TextFormatFlags.NoPrefix;
             e.TextColor = e.Item.ForeColor;
             base.OnRenderItemText(e);
         }
