@@ -27,9 +27,21 @@ public partial class SettingsView : UserControl
         ThemeChoice.SelectedIndex = settings.Theme == "Dark" ? 2 : settings.Theme == "Ocean" ? 1 : 0;
         LoadProcesses();
     }
-    private void LoadProcesses() { Processes.ItemsSource = WindowsActivity.VisibleProcesses(); if (Processes.Items.Count > 0) Processes.SelectedIndex = 0; }
+    private void LoadProcesses() => SetProcessChoices(WindowsActivity.VisibleProcesses());
+    private void SetProcessChoices(string[] names)
+    {
+        var previous = Processes.SelectedItem as string;
+        Processes.ItemsSource = names;
+        Processes.SelectedItem = names.FirstOrDefault(p => p.Equals(previous, StringComparison.OrdinalIgnoreCase));
+    }
     private void RefreshProcesses_Click(object sender, RoutedEventArgs e) => LoadProcesses();
-    private void AddProcess_Click(object sender, RoutedEventArgs e) { if (Processes.SelectedItem is string process) Add(process); }
+    private void AddProcess_Click(object sender, RoutedEventArgs e)
+    {
+        if (Processes.SelectedItem is string process) { Add(process); return; }
+        LoadProcesses();
+        ErrorText.Text = Processes.Items.Count == 0 ? "没有找到有窗口的运行中软件，请先打开目标软件后刷新，或使用添加 .exe。" : "请先在下拉列表中选择软件，再点击添加。";
+        if (Processes.Items.Count > 0) { Processes.Focus(); Processes.IsDropDownOpen = true; }
+    }
     private void AddExecutable_Click(object sender, RoutedEventArgs e)
     {
         var open = new OpenFileDialog { Filter = "Windows 程序|*.exe", Title = "选择要统计的软件" };
@@ -40,7 +52,8 @@ public partial class SettingsView : UserControl
         if (rules.Any(r => r.ProcessName.Equals(process, StringComparison.OrdinalIgnoreCase))) { ErrorText.Text = "该进程已经在列表中。"; return; }
         if (!TryDefaultMinutes(out var minutes)) return;
         var rule = new Settings { DefaultIdleMinutes = minutes }.CreateRule(process);
-        rules.Add(rule); RulesGrid.SelectedItem = rule; ErrorText.Text = "";
+        rules.Add(rule); RulesGrid.SelectedItem = rule; RulesGrid.ScrollIntoView(rule);
+        ErrorText.Text = $"已添加 {process}，点击保存设置后生效。";
     }
     private void Remove_Click(object sender, RoutedEventArgs e) { if (RulesGrid.SelectedItem is AppRule rule) rules.Remove(rule); }
     internal event Action? Saved;

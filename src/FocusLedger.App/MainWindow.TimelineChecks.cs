@@ -29,6 +29,7 @@ public partial class MainWindow
             timelineOriginals = visible.ToDictionary(s => s.Id);
             UpdateTimelineApps(); ApplyTimelineFilters();
             Require(Timeline.Items.Count == 2, "default >= 60 seconds must filter before the 1000-row limit");
+            Require(TimelineTitle.Text == "时间明细 · 2/1004 段", "compact match count");
             Require(((TimelineRow)Timeline.Items[1]).Original.Id == 2, "exactly one minute is included");
             TimelineAppFilter.SelectedItem = TimelineAppFilter.Items.Cast<TimelineAppChoice>().Single(c => c.App == "VS Code");
             Require(Timeline.Items.Count == 1, "combined app and duration filter");

@@ -1,3 +1,13 @@
+# v0.3.5 验证
+
+- 33/33 核心和存储回归测试通过；离线构建及隔离界面自检通过。
+- 程序选择检查覆盖：初始无选择、未选择点击不添加并展开列表、添加明确选中的程序、重复添加拦截、刷新保留选择及目标消失后清空。
+- 宿主解析检查覆盖：普通进程、多子窗口同一应用、无有效子进程、多个不同应用的歧义情况。
+- 实际 Windows 窗口枚举返回 ChatGPT、cloudmusic、explorer、msedge、QQ、SystemSettings、TextInputHost；没有返回 ApplicationFrameHost 或 FocusLedger 本身。
+- 明细标题精确检查为“时间明细 · 2/1004 段”；标准和紧凑设置页面渲染检查通过。
+- 宿主窗口按 Microsoft 的 [EnumChildWindows](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enumchildwindows) 和 [GetWindowThreadProcessId](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowthreadprocessid) 接口枚举和识别，未读取或保存窗口标题。
+- 未安装新依赖；宿主解析的各分支采用构造输入验证，尚未覆盖所有商店应用及其窗口结构。
+
 # v0.3.4 验证
 
 - 离线编译和发布成功；隔离数据界面自检通过。

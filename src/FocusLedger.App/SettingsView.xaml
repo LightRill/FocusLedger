@@ -20,7 +20,11 @@
        <DataGridTextColumn ElementStyle="{StaticResource TableNumber}" EditingElementStyle="{StaticResource TableNumberEditor}" HeaderStyle="{StaticResource CenteredTableHeader}" Header="空闲阈值（分钟）" Binding="{Binding IdleMinutes, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" Width="145"/>
       </DataGrid.Columns>
      </DataGrid>
-     <WrapPanel Grid.Row="2"><Button Content="添加 .exe" Click="AddExecutable_Click" Margin="0,0,8,8"/><ComboBox x:Name="Processes" Width="145" IsEditable="False" Margin="0,0,8,8"/><Button Content="添加运行中软件" Click="AddProcess_Click" Margin="0,0,8,8"/><Button Content="刷新列表" Click="RefreshProcesses_Click" Margin="0,0,8,8"/><Button Content="移除选中" Click="Remove_Click" Margin="0,0,0,8"/></WrapPanel>
+     <WrapPanel Grid.Row="2"><Button Content="添加 .exe" Click="AddExecutable_Click" Margin="0,0,8,8"/>
+      <Grid Width="220" Margin="0,0,8,8"><ComboBox x:Name="Processes" IsEditable="False" AutomationProperties.Name="选择运行中的软件"/>
+       <TextBlock Text="请选择运行中的软件" Margin="10,0,28,0" VerticalAlignment="Center" Foreground="{DynamicResource Muted}" IsHitTestVisible="False"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=Processes}" Value="-1"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+      </Grid>
+      <Button Content="添加运行中软件" Click="AddProcess_Click" Margin="0,0,8,8"/><Button Content="刷新列表" Click="RefreshProcesses_Click" Margin="0,0,8,8"/><Button Content="移除选中" Click="Remove_Click" Margin="0,0,0,8"/></WrapPanel>
     </Grid>
    </TabItem>
    <TabItem Header="数据与启动" Padding="18,9">

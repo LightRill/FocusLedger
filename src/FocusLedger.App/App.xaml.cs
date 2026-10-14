@@ -264,6 +264,9 @@ public partial class App : Application
             window.SetPeriodForCheck(DateTime.Today, Period.Year);
             SaveImage(window, Path.Combine(DataDirectory, "year.png"));
             var settingsView = window.OpenSettings();
+            settingsView.Dispatcher.Invoke(DispatcherPriority.ContextIdle, new Action(window.UpdateLayout));
+            settingsView.CheckProcessPicker();
+            File.WriteAllLines(Path.Combine(checkRoot, "visible-processes.txt"), WindowsActivity.VisibleProcesses());
             SaveImage(window, Path.Combine(DataDirectory, "settings.png"));
             LayoutChecks.CheckTable(settingsView.RulesGrid);
             LayoutChecks.CheckEditor(settingsView);

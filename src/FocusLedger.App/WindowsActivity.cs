@@ -12,6 +12,10 @@ internal static class WindowsActivity
     [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)] private static extern bool GetLastInputInfo(ref LastInput info);
     [DllImport("user32.dll", SetLastError = true)] private static extern nint OpenInputDesktop(uint flags, bool inherit, uint access);
     [DllImport("user32.dll")] private static extern bool CloseDesktop(nint desktop);
+    private delegate bool EnumWindowCallback(nint window, nint parameter);
+    [DllImport("user32.dll")] private static extern bool EnumWindows(EnumWindowCallback callback, nint parameter);
+    [DllImport("user32.dll")] private static extern bool EnumChildWindows(nint parent, EnumWindowCallback callback, nint parameter);
+    [DllImport("user32.dll")] private static extern bool IsWindowVisible(nint window);
 
     internal static ActivitySample Capture(Settings settings, bool paused, bool locked)
     {
@@ -29,9 +33,8 @@ internal static class WindowsActivity
         {
             var window = GetForegroundWindow();
             if (window == 0) return new(now, monotonic, "", idle, 180, SegmentKind.Unavailable);
-            GetWindowThreadProcessId(window, out var processId);
-            using var process = Process.GetProcessById((int)processId);
-            var rule = settings.Rules.FirstOrDefault(r => r.Enabled && r.ProcessName.Equals(process.ProcessName, StringComparison.OrdinalIgnoreCase));
+            var processName = WindowProcessName(window);
+            var rule = settings.Rules.FirstOrDefault(r => r.Enabled && r.ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase));
             if (rule is null) return new(now, monotonic, "", idle, 180, SegmentKind.Excluded);
             var timeout = rule.IdleMinutes * 60;
             return new(now, monotonic, rule.Name, idle, timeout, idle < timeout ? SegmentKind.Active : SegmentKind.Idle);
@@ -39,8 +42,47 @@ internal static class WindowsActivity
         catch { return new(now, monotonic, "", idle, 180, SegmentKind.Unavailable); }
     }
 
-    internal static string[] VisibleProcesses() => Process.GetProcesses().Select(p =>
+    private static string? OwnerProcessName(nint window)
     {
-        using (p) { try { return p.MainWindowHandle != 0 ? p.ProcessName : null; } catch { return null; } }
-    }).Where(p => p is not null).Cast<string>().Distinct(StringComparer.OrdinalIgnoreCase).Order().ToArray();
+        try
+        {
+            GetWindowThreadProcessId(window, out var id);
+            if (id == 0) return null;
+            using var process = Process.GetProcessById((int)id);
+            return process.ProcessName;
+        }
+        catch (ArgumentException) { return null; }
+        catch (InvalidOperationException) { return null; }
+        catch (System.ComponentModel.Win32Exception) { return null; }
+    }
+
+    internal static string? ResolveHostedProcess(string? owner, IEnumerable<string?> children)
+    {
+        if (!string.Equals(owner, "ApplicationFrameHost", StringComparison.OrdinalIgnoreCase)) return owner;
+        var candidates = children.Where(p => !string.IsNullOrEmpty(p) && !p.Equals(owner, StringComparison.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        // Do not group unrelated hosted applications under a shared host rule.
+        return candidates.Length == 1 ? candidates[0] : null;
+    }
+
+    internal static string? WindowProcessName(nint window)
+    {
+        var owner = OwnerProcessName(window);
+        if (!string.Equals(owner, "ApplicationFrameHost", StringComparison.OrdinalIgnoreCase)) return owner;
+        var children = new List<string?>();
+        EnumChildWindows(window, (child, _) => { children.Add(OwnerProcessName(child)); return true; }, 0);
+        return ResolveHostedProcess(owner, children);
+    }
+
+    internal static string[] VisibleProcesses()
+    {
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        EnumWindows((window, _) =>
+        {
+            if (IsWindowVisible(window) && WindowProcessName(window) is string name &&
+                !name.Equals("FocusLedger", StringComparison.OrdinalIgnoreCase)) names.Add(name);
+            return true;
+        }, 0);
+        return names.Order(StringComparer.CurrentCultureIgnoreCase).ToArray();
+    }
 }

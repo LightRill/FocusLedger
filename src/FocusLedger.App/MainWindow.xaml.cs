@@ -160,9 +160,8 @@ public partial class MainWindow : Window
         var rows = matches.Take(1000).Select(s => new TimelineRow(timelineOriginals[s.Id], s, zone)).ToList();
         Timeline.ItemsSource = rows;
         if (selectedId is not null) Timeline.SelectedItem = rows.FirstOrDefault(r => r.Original.Id == selectedId);
-        TimelineTitle.Text = matches.Count > 1000
-            ? $"时间明细 · 显示最近 1000 / 匹配 {matches.Count} 段"
-            : $"时间明细 · 匹配 {matches.Count} / 共 {visible.Count} 段";
+        TimelineTitle.Text = $"时间明细 · {matches.Count}/{visible.Count} 段";
+        TimelineTitle.ToolTip = matches.Count > 1000 ? "列表仅显示符合条件的最近 1000 段；CSV 导出包含全部有效记录。" : null;
         EmptyHint.Text = visible.Count == 0 ? "该周期暂无有效记录。" : "没有符合筛选条件的记录，可切换程序或降低最短时长。";
         EmptyHint.Visibility = matches.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
