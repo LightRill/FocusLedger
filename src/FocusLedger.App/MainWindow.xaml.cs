@@ -35,7 +35,7 @@ public partial class MainWindow : Window
         Deactivated += (_, _) => HideChartDetail();
         StateChanged += (_, _) => UpdateWindowState();
         SizeChanged += (_, _) => { UpdateMaximizedInsets(); HideChartDetail(); };
-        DpiChanged += (_, _) => Dispatcher.BeginInvoke(new Action(UpdateMaximizedInsets));
+        DpiChanged += (_, _) => Dispatcher.BeginInvoke(new Action(() => { UpdateMaximizedInsets(); Refresh(); }));
         DateSelect.SelectedDate = DateTime.Today;
         initialized = true;
         ThemeManager.Changed += Refresh;
@@ -175,6 +175,7 @@ public partial class MainWindow : Window
     {
         if (!initialized || TrendCanvas.ActualWidth < 20 || buckets.Count == 0) return;
         TrendCanvas.Children.Clear();
+        trendBars.Clear();
         var width = TrendCanvas.ActualWidth;
         var max = Math.Max(CurrentPeriod == Period.Day ? 3600 : 1800, buckets.Max(b => b.Seconds));
         const double chartHeight = 118;
@@ -188,6 +189,7 @@ public partial class MainWindow : Window
             var bar = new Border { Width = Math.Max(3, unit * .58), Height = Math.Max(3, barHeight), CornerRadius = new CornerRadius(3, 3, 0, 0),
                 Background = ThemeManager.Brush(b.Seconds > 0 ? "Accent" : b.ObservedSeconds > 0 ? "Soft" : "Line") };
             Canvas.SetLeft(bar, i * unit + unit * .21); Canvas.SetTop(bar, chartHeight - bar.Height); TrendCanvas.Children.Add(bar);
+            trendBars.Add((i, new Rect(Canvas.GetLeft(bar), Canvas.GetTop(bar), bar.Width, bar.Height)));
             if (buckets.Count <= 12 || i % (buckets.Count > 25 ? 5 : 3) == 0)
             {
                 var label = new TextBlock { Text = b.Label, FontSize = 10, Foreground = ThemeManager.Brush("Muted") };
@@ -227,24 +229,45 @@ public partial class MainWindow : Window
         for (int month = 0; month < 12; month++)
         {
             var first = start.AddMonths(month);
-            var block = new StackPanel { Width = 130, Margin = new Thickness(0, 0, 12, 15) };
+            var dpi = VisualTreeHelper.GetDpi(this);
+            var days = CreateHeatmapDays(first, all, dpi.DpiScaleX, dpi.DpiScaleY);
+            var block = new StackPanel { Width = days.Width, Margin = new Thickness(0, 0, 12, 15) };
             block.Children.Add(new TextBlock { Text = $"{first.Month} 月", FontSize = 11, Margin = new Thickness(0, 0, 0, 7) });
-            var days = new System.Windows.Controls.Primitives.UniformGrid { Columns = 7 };
-            for (int blank = 0; blank < ((int)first.DayOfWeek + 6) % 7; blank++) days.Children.Add(new Border { Height = 16 });
-            for (int day = 0; day < DateTime.DaysInMonth(first.Year, first.Month); day++)
-            {
-                var date = first.AddDays(day);
-                var parts = Reports.Clip(all, Reports.ToUtc(date, zone), Reports.ToUtc(date.AddDays(1), zone));
-                var seconds = parts.Where(s => s.IsEffective).Sum(s => s.Seconds);
-                var observed = parts.Any(s => s.Kind != SegmentKind.Unavailable);
-                var cell = new Border { Height = 14, Margin = new Thickness(1), CornerRadius = new CornerRadius(2), Background = ThemeManager.Heat(seconds, observed) };
-                cell.MouseMove += (_, e) => ShowChartDetail(date.ToString("yyyy 年 M 月 d 日"), seconds,
-                    parts.Where(s => s.Kind != SegmentKind.Unavailable).Sum(s => s.Seconds), e.GetPosition(ChartOverlay));
-                cell.MouseLeave += (_, _) => HideChartDetail();
-                days.Children.Add(cell);
-            }
             block.Children.Add(days); YearHeatmap.Children.Add(block);
         }
+    }
+
+    private Canvas CreateHeatmapDays(DateTime first, List<Segment> all, double dpiX, double dpiY)
+    {
+        // Fixed physical-pixel cell sizes and gaps avoid fractional 130 / 7 columns.
+        var cellWidth = Math.Round(16 * dpiX) / dpiX;
+        var cellHeight = Math.Round(14 * dpiY) / dpiY;
+        var gapX = Math.Round(3 * dpiX) / dpiX;
+        var gapY = Math.Round(3 * dpiY) / dpiY;
+        var offset = ((int)first.DayOfWeek + 6) % 7;
+        var count = DateTime.DaysInMonth(first.Year, first.Month);
+        var rows = (offset + count + 6) / 7;
+        var days = new Canvas { Width = cellWidth * 7 + gapX * 6, Height = rows * cellHeight + (rows - 1) * gapY,
+            UseLayoutRounding = false, SnapsToDevicePixels = true };
+        for (int day = 0; day < count; day++)
+        {
+            var date = first.AddDays(day);
+            var parts = Reports.Clip(all, Reports.ToUtc(date, zone), Reports.ToUtc(date.AddDays(1), zone));
+            var seconds = parts.Where(s => s.IsEffective).Sum(s => s.Seconds);
+            var observedSeconds = parts.Where(s => s.Kind != SegmentKind.Unavailable).Sum(s => s.Seconds);
+            var cell = new Border { Width = cellWidth, Height = cellHeight, CornerRadius = new CornerRadius(2),
+                Background = ThemeManager.Heat(seconds, observedSeconds > 0) };
+            cell.MouseMove += (_, e) =>
+            {
+                if (seconds > 0) ShowChartDetail(date.ToString("yyyy 年 M 月 d 日"), seconds, observedSeconds, e.GetPosition(ChartOverlay));
+                else HideChartDetail();
+            };
+            cell.MouseLeave += (_, _) => HideChartDetail();
+            Canvas.SetLeft(cell, (offset + day) % 7 * (cellWidth + gapX));
+            Canvas.SetTop(cell, (offset + day) / 7 * (cellHeight + gapY));
+            days.Children.Add(cell);
+        }
+        return days;
     }
 
     private void Today_Click(object sender, RoutedEventArgs e) => ShowPage(0);

@@ -4,6 +4,7 @@ namespace FocusLedger.App;
 
 public partial class MainWindow
 {
+    private readonly List<(int Index, Rect Bounds)> trendBars = [];
     private void HideChartDetail() => ChartDetail.Visibility = Visibility.Collapsed;
 
     private void UpdateTrendDetail(Point point)
@@ -11,9 +12,12 @@ public partial class MainWindow
         if (buckets.Count == 0 || TrendCanvas.ActualWidth <= 0 || point.X < 0 || point.X >= TrendCanvas.ActualWidth ||
             point.Y < 0 || point.Y > TrendCanvas.ActualHeight)
         { HideChartDetail(); return; }
-        // Each period owns its full-height column, including very short and empty bars.
+        // Keep a small tolerance around the drawn bar, never the full column.
         var index = Math.Min(buckets.Count - 1, (int)(point.X / TrendCanvas.ActualWidth * buckets.Count));
         var bucket = buckets[index];
+        var bounds = trendBars.FirstOrDefault(b => b.Index == index).Bounds;
+        bounds.Inflate(3, 4);
+        if (bucket.Seconds <= 0 || !bounds.Contains(point)) { HideChartDetail(); return; }
         var date = TimeZoneInfo.ConvertTime(bucket.Start, zone);
         var end = TimeZoneInfo.ConvertTime(index + 1 < buckets.Count ? buckets[index + 1].Start : CurrentRange.End, zone);
         var title = CurrentPeriod switch
