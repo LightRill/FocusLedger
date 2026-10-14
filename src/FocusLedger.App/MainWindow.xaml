@@ -26,7 +26,7 @@
    <DockPanel>
     <StackPanel DockPanel.Dock="Bottom">
      <TextBlock Text="数据只留在这台电脑" Style="{StaticResource SidebarFooter}"/>
-     <TextBlock Text="v0.3.14 · Windows" Style="{StaticResource SidebarFooter}" Margin="0,6,0,0"/>
+     <TextBlock Text="v0.3.15 · Windows" Style="{StaticResource SidebarFooter}" Margin="0,6,0,0"/>
     </StackPanel>
     <StackPanel>
      <Image Source="Assets/focusledger.png" Width="48" Height="48" HorizontalAlignment="Left" Margin="0,0,0,18" RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -54,9 +54,9 @@
     </DockPanel>
     <Grid Margin="0,0,0,20">
      <Grid.ColumnDefinitions><ColumnDefinition Width="1.2*"/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-     <Border Style="{StaticResource Card}" Background="{DynamicResource Soft}" BorderBrush="{DynamicResource Line}" Margin="0,0,12,0"><StackPanel><TextBlock Text="有效投入" Foreground="{DynamicResource Accent}"/><TextBlock x:Name="TotalText" Text="0 分 00 秒" FontSize="29" FontWeight="SemiBold" Margin="0,10,0,8"/></StackPanel></Border>
-     <Border Grid.Column="1" Style="{StaticResource Card}" Margin="0,0,12,0"><StackPanel><TextBlock Text="自动记录" Style="{StaticResource Caption}"/><TextBlock x:Name="AutoText" FontSize="24" FontWeight="SemiBold" Margin="0,13,0,11"/><TextBlock Text="包含空闲阈值内的阅读与思考" FontSize="11" Foreground="{DynamicResource Muted}"/></StackPanel></Border>
-     <Border Grid.Column="2" Style="{StaticResource Card}"><StackPanel><TextBlock Text="人工补记 / 修正" Style="{StaticResource Caption}"/><TextBlock x:Name="ManualText" FontSize="24" FontWeight="SemiBold" Margin="0,13,0,11"/><TextBlock x:Name="LongestText" FontSize="11" Foreground="{DynamicResource Muted}"/></StackPanel></Border>
+     <Border Style="{StaticResource Card}" Background="{DynamicResource Soft}" BorderBrush="{DynamicResource Line}" Margin="0,0,12,0"><StackPanel><TextBlock Text="有效投入" Foreground="{DynamicResource Accent}"/><TextBlock x:Name="TotalText" Text="0 分 00 秒" FontSize="29" FontWeight="SemiBold" Margin="0,10,0,8"/><TextBlock x:Name="LongestText" FontSize="11" Foreground="{DynamicResource Muted}"/></StackPanel></Border>
+     <Border Grid.Column="1" Style="{StaticResource Card}" Margin="0,0,12,0"><StackPanel><TextBlock Text="自动记录" Style="{StaticResource Caption}"/><TextBlock x:Name="AutoText" FontSize="24" FontWeight="SemiBold" Margin="0,13,0,11"/></StackPanel></Border>
+     <Border Grid.Column="2" Style="{StaticResource Card}"><StackPanel><TextBlock Text="人工补记 / 修正" Style="{StaticResource Caption}"/><TextBlock x:Name="ManualText" FontSize="24" FontWeight="SemiBold" Margin="0,13,0,11"/></StackPanel></Border>
     </Grid>
     <Grid Margin="0,0,0,20">
      <Grid.ColumnDefinitions><ColumnDefinition Width="1.8*"/><ColumnDefinition/></Grid.ColumnDefinitions>
