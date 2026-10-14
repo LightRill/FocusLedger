@@ -18,7 +18,7 @@
    <DockPanel>
     <StackPanel DockPanel.Dock="Bottom">
      <TextBlock Text="数据只留在这台电脑" Style="{StaticResource SidebarFooter}"/>
-     <TextBlock Text="v0.3.6 · Windows" Style="{StaticResource SidebarFooter}" Margin="0,6,0,0"/>
+     <TextBlock Text="v0.3.7 · Windows" Style="{StaticResource SidebarFooter}" Margin="0,6,0,0"/>
     </StackPanel>
     <StackPanel>
      <Image Source="Assets/focusledger.png" Width="48" Height="48" HorizontalAlignment="Left" Margin="0,0,0,18" RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -104,5 +104,13 @@
   </ScrollViewer>
   <ScrollViewer x:Name="ManualPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto"><ContentControl x:Name="ManualHost" Width="660" HorizontalAlignment="Left" Margin="0"/></ScrollViewer>
   </Grid>
+  <Canvas x:Name="ChartOverlay" Grid.RowSpan="2" Grid.ColumnSpan="2" IsHitTestVisible="False" ClipToBounds="True" Panel.ZIndex="20">
+   <Border x:Name="ChartDetail" Visibility="Collapsed" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="10" Padding="14,12" MaxWidth="290">
+    <StackPanel><TextBlock x:Name="ChartDetailTitle" FontFamily="{DynamicResource AppFont}" FontSize="12" Foreground="{DynamicResource Muted}"/>
+     <TextBlock x:Name="ChartDetailValue" FontFamily="{DynamicResource AppFont}" FontSize="19" FontWeight="SemiBold" Foreground="{DynamicResource Ink}" Margin="0,7,0,5"/>
+     <TextBlock x:Name="ChartDetailHint" FontFamily="{DynamicResource AppFont}" FontSize="11" Foreground="{DynamicResource Muted}" TextWrapping="Wrap"/>
+    </StackPanel>
+   </Border>
+  </Canvas>
  </Grid>
 </Window>

@@ -293,6 +293,7 @@ public partial class App : Application
             window.ShowOverviewForCheck();
             window.SetPeriodForCheck(DateTime.Today.AddDays(-1), Period.Day);
             SaveImage(window, Path.Combine(DataDirectory, "overview-dark.png"));
+            window.CheckChartDetails(name => SaveImage(window, Path.Combine(checkRoot, name)));
             window.OverviewPage.ScrollToBottom();
             SaveImage(window, Path.Combine(DataDirectory, "timeline-filters-dark.png"));
             window.Width = window.MinWidth; window.Height = window.MinHeight;

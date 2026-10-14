@@ -28,8 +28,13 @@ public partial class MainWindow : Window
     {
         this.store = store; this.tracker = tracker; this.settingsPath = settingsPath; this.dataDirectory = dataDirectory;
         InitializeComponent();
+        TrendCanvas.Background = Brushes.Transparent;
+        TrendCanvas.MouseMove += (_, e) => UpdateTrendDetail(e.GetPosition(TrendCanvas));
+        TrendCanvas.MouseLeave += (_, _) => HideChartDetail();
+        OverviewPage.ScrollChanged += (_, _) => HideChartDetail();
+        Deactivated += (_, _) => HideChartDetail();
         StateChanged += (_, _) => UpdateWindowState();
-        SizeChanged += (_, _) => UpdateMaximizedInsets();
+        SizeChanged += (_, _) => { UpdateMaximizedInsets(); HideChartDetail(); };
         DpiChanged += (_, _) => Dispatcher.BeginInvoke(new Action(UpdateMaximizedInsets));
         DateSelect.SelectedDate = DateTime.Today;
         initialized = true;
@@ -181,8 +186,7 @@ public partial class MainWindow : Window
             var b = buckets[i];
             var barHeight = b.Seconds / max * (chartHeight - 12);
             var bar = new Border { Width = Math.Max(3, unit * .58), Height = Math.Max(3, barHeight), CornerRadius = new CornerRadius(3, 3, 0, 0),
-                Background = ThemeManager.Brush(b.Seconds > 0 ? "Accent" : b.ObservedSeconds > 0 ? "Soft" : "Line"),
-                ToolTip = $"{b.Label} · {DurationText.Format(b.Seconds)}" + (b.ObservedSeconds == 0 ? " · 无记录" : "") };
+                Background = ThemeManager.Brush(b.Seconds > 0 ? "Accent" : b.ObservedSeconds > 0 ? "Soft" : "Line") };
             Canvas.SetLeft(bar, i * unit + unit * .21); Canvas.SetTop(bar, chartHeight - bar.Height); TrendCanvas.Children.Add(bar);
             if (buckets.Count <= 12 || i % (buckets.Count > 25 ? 5 : 3) == 0)
             {
@@ -192,6 +196,8 @@ public partial class MainWindow : Window
         }
         var top = new TextBlock { Text = DurationText.Short(max), FontSize = 10, Foreground = ThemeManager.Brush("Muted") };
         Canvas.SetLeft(top, 0); Canvas.SetTop(top, 0); TrendCanvas.Children.Add(top);
+        // Refreshes rebuild bars, but the canvas keeps the hover area and pointer state.
+        if (TrendCanvas.IsMouseOver) UpdateTrendDetail(Mouse.GetPosition(TrendCanvas));
     }
 
     private void DrawBreakdown(double total)
@@ -231,7 +237,11 @@ public partial class MainWindow : Window
                 var parts = Reports.Clip(all, Reports.ToUtc(date, zone), Reports.ToUtc(date.AddDays(1), zone));
                 var seconds = parts.Where(s => s.IsEffective).Sum(s => s.Seconds);
                 var observed = parts.Any(s => s.Kind != SegmentKind.Unavailable);
-                days.Children.Add(new Border { Height = 14, Margin = new Thickness(1), CornerRadius = new CornerRadius(2), Background = ThemeManager.Heat(seconds, observed), ToolTip = $"{date:yyyy-MM-dd} · {(observed ? DurationText.Format(seconds) : "无记录")}" });
+                var cell = new Border { Height = 14, Margin = new Thickness(1), CornerRadius = new CornerRadius(2), Background = ThemeManager.Heat(seconds, observed) };
+                cell.MouseMove += (_, e) => ShowChartDetail(date.ToString("yyyy 年 M 月 d 日"), seconds,
+                    parts.Where(s => s.Kind != SegmentKind.Unavailable).Sum(s => s.Seconds), e.GetPosition(ChartOverlay));
+                cell.MouseLeave += (_, _) => HideChartDetail();
+                days.Children.Add(cell);
             }
             block.Children.Add(days); YearHeatmap.Children.Add(block);
         }
@@ -271,6 +281,7 @@ public partial class MainWindow : Window
     }
     private void ShowPage(int index)
     {
+        HideChartDetail();
         OverviewPage.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
         SettingsPage.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
         BackupPage.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;

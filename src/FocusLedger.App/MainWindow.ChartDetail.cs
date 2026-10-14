@@ -1,0 +1,44 @@
+using FocusLedger.Core;
+
+namespace FocusLedger.App;
+
+public partial class MainWindow
+{
+    private void HideChartDetail() => ChartDetail.Visibility = Visibility.Collapsed;
+
+    private void UpdateTrendDetail(Point point)
+    {
+        if (buckets.Count == 0 || TrendCanvas.ActualWidth <= 0 || point.X < 0 || point.X >= TrendCanvas.ActualWidth ||
+            point.Y < 0 || point.Y > TrendCanvas.ActualHeight)
+        { HideChartDetail(); return; }
+        // Each period owns its full-height column, including very short and empty bars.
+        var index = Math.Min(buckets.Count - 1, (int)(point.X / TrendCanvas.ActualWidth * buckets.Count));
+        var bucket = buckets[index];
+        var date = TimeZoneInfo.ConvertTime(bucket.Start, zone);
+        var end = TimeZoneInfo.ConvertTime(index + 1 < buckets.Count ? buckets[index + 1].Start : CurrentRange.End, zone);
+        var title = CurrentPeriod switch
+        {
+            Period.Day => $"{date:MM 月 dd 日 HH:mm}–{end:HH:mm}",
+            Period.Year => date.ToString("yyyy 年 M 月"),
+            _ => date.ToString("yyyy 年 M 月 d 日")
+        };
+        ShowChartDetail(title, bucket.Seconds, bucket.ObservedSeconds, TrendCanvas.TranslatePoint(point, ChartOverlay));
+    }
+
+    private void ShowChartDetail(string title, double seconds, double observedSeconds, Point pointer)
+    {
+        ChartDetailTitle.Text = title;
+        ChartDetailValue.Text = observedSeconds > 0 ? DurationText.Format(seconds) : "无记录";
+        ChartDetailHint.Text = observedSeconds > 0 ? $"有效投入 · 有记录覆盖 {DurationText.Format(observedSeconds)}" : "该时段没有可用记录";
+        ChartDetail.Visibility = Visibility.Visible;
+        ChartDetail.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        var size = ChartDetail.DesiredSize;
+        const double gap = 18, edge = 12;
+        var x = pointer.X + gap;
+        var y = pointer.Y + gap;
+        if (x + size.Width > ChartOverlay.ActualWidth - edge) x = pointer.X - size.Width - gap;
+        if (y + size.Height > ChartOverlay.ActualHeight - edge) y = pointer.Y - size.Height - gap;
+        Canvas.SetLeft(ChartDetail, Math.Clamp(x, edge, Math.Max(edge, ChartOverlay.ActualWidth - size.Width - edge)));
+        Canvas.SetTop(ChartDetail, Math.Clamp(y, edge, Math.Max(edge, ChartOverlay.ActualHeight - size.Height - edge)));
+    }
+}
