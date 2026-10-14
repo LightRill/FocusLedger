@@ -16,6 +16,8 @@ public partial class MainWindow : Window
     private readonly TimeZoneInfo zone = TimeZoneInfo.Local;
     private List<SummaryBucket> buckets = [];
     private List<Segment> visible = [];
+    private Dictionary<long, Segment> timelineOriginals = [];
+    private bool updatingTimelineFilters;
     private bool initialized;
     private DateTime lastRefresh = DateTime.MinValue;
     public bool AllowClose { get; set; }
@@ -113,16 +115,56 @@ public partial class MainWindow : Window
             DrawChart();
             DrawBreakdown(total);
             DrawYearHeatmap(clipped, range);
-            var selectedId = (Timeline.SelectedItem as TimelineRow)?.Original.Id;
             // Editing receives the original interval, not a clipped cross-midnight copy.
-            var originals = all.ToDictionary(s => s.Id);
-            var rows = visible.OrderByDescending(s => s.Start).Take(1000).Select(s => new TimelineRow(originals[s.Id], s, zone)).ToList();
-            Timeline.ItemsSource = rows;
-            if (selectedId is not null) Timeline.SelectedItem = rows.FirstOrDefault(r => r.Original.Id == selectedId);
-            TimelineTitle.Text = visible.Count > 1000 ? $"时间明细 · 最近 1000 / {visible.Count} 段（导出包含全部）" : $"时间明细 · {visible.Count} 段";
-            EmptyHint.Visibility = visible.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            timelineOriginals = all.ToDictionary(s => s.Id);
+            UpdateTimelineApps();
+            ApplyTimelineFilters();
         }
         catch (Exception ex) { FooterText.Text = "读取失败：" + ex.Message; }
+    }
+
+    private sealed record TimelineAppChoice(string? App, string Label)
+    {
+        public override string ToString() => Label;
+    }
+
+    private void UpdateTimelineApps()
+    {
+        var selectedApp = (TimelineAppFilter.SelectedItem as TimelineAppChoice)?.App;
+        var names = visible.Select(s => s.App).Distinct(StringComparer.Ordinal).ToList();
+        // Keep an explicit selection when the next date has no records for that app.
+        if (selectedApp is not null && !names.Contains(selectedApp)) names.Add(selectedApp);
+        var choices = new List<TimelineAppChoice> { new(null, "全部程序") };
+        choices.AddRange(names.OrderBy(s => s, StringComparer.CurrentCultureIgnoreCase).Select(s => new TimelineAppChoice(s, s)));
+        updatingTimelineFilters = true;
+        try
+        {
+            TimelineAppFilter.ItemsSource = choices;
+            TimelineAppFilter.SelectedItem = choices.First(c => c.App == selectedApp);
+        }
+        finally { updatingTimelineFilters = false; }
+    }
+
+    private void TimelineFilter_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (initialized && !updatingTimelineFilters) ApplyTimelineFilters();
+    }
+
+    private void ApplyTimelineFilters()
+    {
+        var selectedId = (Timeline.SelectedItem as TimelineRow)?.Original.Id;
+        var app = (TimelineAppFilter.SelectedItem as TimelineAppChoice)?.App;
+        var minimumSeconds = int.Parse((string)((ComboBoxItem)TimelineDurationFilter.SelectedItem).Tag);
+        var matches = visible.Where(s => (app is null || s.App == app) && s.Seconds >= minimumSeconds)
+            .OrderByDescending(s => s.Start).ToList();
+        var rows = matches.Take(1000).Select(s => new TimelineRow(timelineOriginals[s.Id], s, zone)).ToList();
+        Timeline.ItemsSource = rows;
+        if (selectedId is not null) Timeline.SelectedItem = rows.FirstOrDefault(r => r.Original.Id == selectedId);
+        TimelineTitle.Text = matches.Count > 1000
+            ? $"时间明细 · 显示最近 1000 / 匹配 {matches.Count} 段"
+            : $"时间明细 · 匹配 {matches.Count} / 共 {visible.Count} 段";
+        EmptyHint.Text = visible.Count == 0 ? "该周期暂无有效记录。" : "没有符合筛选条件的记录，可切换程序或降低最短时长。";
+        EmptyHint.Visibility = matches.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void DrawChart()

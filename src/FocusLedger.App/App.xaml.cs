@@ -258,6 +258,7 @@ public partial class App : Application
         try
         {
             window!.SetPeriodForCheck(DateTime.Today.AddDays(-1), Period.Day);
+            window.CheckTimelineFilters(checkRoot);
             SaveImage(window, Path.Combine(DataDirectory, "today.png"));
             LayoutChecks.CheckTable(window.Timeline);
             window.SetPeriodForCheck(DateTime.Today, Period.Year);
@@ -289,6 +290,13 @@ public partial class App : Application
             window.ShowOverviewForCheck();
             window.SetPeriodForCheck(DateTime.Today.AddDays(-1), Period.Day);
             SaveImage(window, Path.Combine(DataDirectory, "overview-dark.png"));
+            window.OverviewPage.ScrollToBottom();
+            SaveImage(window, Path.Combine(DataDirectory, "timeline-filters-dark.png"));
+            window.Width = window.MinWidth; window.Height = window.MinHeight;
+            window.OverviewPage.ScrollToBottom();
+            SaveImage(window, Path.Combine(DataDirectory, "timeline-filters-compact.png"));
+            window.Width = previousWidth; window.Height = previousHeight;
+            window.OverviewPage.ScrollToTop();
             ThemeManager.Apply("Ocean"); SaveImage(window, Path.Combine(DataDirectory, "overview-ocean.png"));
             ThemeManager.Apply("Forest");
             var reset = SettingsFile.Clone(tracker.Settings); reset.DefaultIdleMinutes = 3; reset.Theme = "Forest";

@@ -18,7 +18,7 @@
    <DockPanel>
     <StackPanel DockPanel.Dock="Bottom">
      <TextBlock Text="数据只留在这台电脑" Style="{StaticResource SidebarFooter}"/>
-     <TextBlock Text="v0.3.3 · Windows" Style="{StaticResource SidebarFooter}" Margin="0,6,0,0"/>
+     <TextBlock Text="v0.3.4 · Windows" Style="{StaticResource SidebarFooter}" Margin="0,6,0,0"/>
     </StackPanel>
     <StackPanel>
      <Image Source="Assets/focusledger.png" Width="48" Height="48" HorizontalAlignment="Left" Margin="0,0,0,18" RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -59,6 +59,13 @@
     <Border Style="{StaticResource Card}">
      <StackPanel>
       <DockPanel Margin="0,0,0,14"><StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button Content="编辑选中" Click="Edit_Click" Padding="10,6"/><Button Content="删除选中" Click="Delete_Click" Padding="10,6" Margin="0"/></StackPanel><StackPanel><TextBlock x:Name="TimelineTitle" Text="时间明细" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="仅列有效片段；空闲和未采集区间不计入总时长。" Style="{StaticResource Caption}" Margin="0,6,0,0"/></StackPanel></DockPanel>
+      <WrapPanel Margin="0,0,0,6">
+       <StackPanel Orientation="Horizontal" Margin="0,0,20,8"><TextBlock Text="程序" VerticalAlignment="Center" Margin="0,0,10,0"/><ComboBox x:Name="TimelineAppFilter" Width="190" DisplayMemberPath="Label" SelectionChanged="TimelineFilter_Changed" AutomationProperties.Name="筛选程序"/></StackPanel>
+       <StackPanel Orientation="Horizontal" Margin="0,0,20,8"><TextBlock Text="最短时长" VerticalAlignment="Center" Margin="0,0,10,0"/><ComboBox x:Name="TimelineDurationFilter" Width="155" SelectedIndex="2" SelectionChanged="TimelineFilter_Changed" AutomationProperties.Name="筛选最短时长">
+        <ComboBoxItem Content="不限时长" Tag="0"/><ComboBoxItem Content="≥ 30 秒" Tag="30"/><ComboBoxItem Content="≥ 1 分钟" Tag="60"/><ComboBoxItem Content="≥ 3 分钟" Tag="180"/><ComboBoxItem Content="≥ 5 分钟" Tag="300"/><ComboBoxItem Content="≥ 10 分钟" Tag="600"/><ComboBoxItem Content="≥ 30 分钟" Tag="1800"/><ComboBoxItem Content="≥ 1 小时" Tag="3600"/>
+       </ComboBox></StackPanel>
+      </WrapPanel>
+      <TextBlock Text="筛选仅影响明细；总时长、图表及 CSV 导出仍包含全部有效记录。" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,0,0,12"/>
       <DataGrid x:Name="Timeline" IsReadOnly="True" Height="205" MouseDoubleClick="Timeline_DoubleClick">
        <DataGrid.Columns>
         <DataGridTextColumn ElementStyle="{StaticResource TableText}" EditingElementStyle="{StaticResource TableEditor}" Header="开始" Binding="{Binding StartText}" Width="145"/>
