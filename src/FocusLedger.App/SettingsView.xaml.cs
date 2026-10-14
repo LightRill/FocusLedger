@@ -118,13 +118,15 @@ internal static class StartupRegistration
     }
     internal static void SetEnabled(bool enabled)
     {
-        if (enabled == IsEnabled()) return;
+        if (!enabled && IsEnabled() == false) return;
         using var key = Registry.CurrentUser.CreateSubKey(RunKey);
         if (enabled)
         {
             var exe = Environment.ProcessPath ?? throw new InvalidOperationException("无法确定程序路径。");
             if (!Path.GetFileName(exe).Equals("FocusLedger.exe", StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("请从 FocusLedger.exe 启动后再设置开机自启。");
-            key.SetValue("FocusLedger", $"\"{exe}\" --minimized");
+            var command = $"\"{exe}\" --minimized";
+            if (!string.Equals(key.GetValue("FocusLedger") as string, command, StringComparison.OrdinalIgnoreCase))
+                key.SetValue("FocusLedger", command);
         }
         else key.DeleteValue("FocusLedger", false);
     }

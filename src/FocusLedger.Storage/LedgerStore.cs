@@ -15,8 +15,28 @@ public sealed class LedgerStore : IDisposable
         DatabasePath = Path.GetFullPath(path);
         Directory.CreateDirectory(Path.GetDirectoryName(DatabasePath)!);
         connection = new(new SqliteConnectionStringBuilder { DataSource = DatabasePath, Pooling = false }.ToString());
-        connection.Open();
-        Execute("""
+        try
+        {
+            connection.Open();
+            using var version = connection.CreateCommand();
+            version.CommandText = "PRAGMA user_version";
+            var schemaVersion = Convert.ToInt64(version.ExecuteScalar());
+            if (schemaVersion is < 0 or > 1)
+                throw new InvalidDataException("该数据由更高版本的 FocusLedger 创建，请更新程序后再打开。原数据未修改。");
+            if (schemaVersion == 0)
+            {
+                version.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'";
+                if (Convert.ToInt64(version.ExecuteScalar()) != 0)
+                    throw new InvalidDataException("该文件不是受支持的 FocusLedger 数据库。请选择其他目录，原文件未修改。");
+            }
+            else
+            {
+                version.CommandText = "SELECT id,start_ms,end_ms,app,kind,note FROM segments LIMIT 0";
+                using (var reader = version.ExecuteReader()) { }
+                version.CommandText = "SELECT id,at_utc,action,before_json,after_json FROM corrections LIMIT 0";
+                using (var reader = version.ExecuteReader()) { }
+            }
+            Execute("""
             PRAGMA journal_mode=WAL;
             PRAGMA synchronous=NORMAL;
             PRAGMA busy_timeout=3000;
@@ -25,11 +45,14 @@ public sealed class LedgerStore : IDisposable
                 app TEXT NOT NULL, kind INTEGER NOT NULL, note TEXT NOT NULL DEFAULT '',
                 CHECK(end_ms > start_ms));
             CREATE INDEX IF NOT EXISTS ix_segments_time ON segments(start_ms, end_ms);
+            CREATE INDEX IF NOT EXISTS ix_segments_end ON segments(end_ms);
             CREATE TABLE IF NOT EXISTS corrections (
                 id INTEGER PRIMARY KEY, at_utc TEXT NOT NULL, action TEXT NOT NULL,
                 before_json TEXT NOT NULL, after_json TEXT NOT NULL);
             PRAGMA user_version=1;
             """);
+        }
+        catch { connection.Dispose(); throw; }
     }
 
     private void Execute(string sql, SqliteTransaction? transaction = null, params (string, object)[] parameters)

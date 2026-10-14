@@ -6,10 +6,12 @@ namespace FocusLedger.App;
 public partial class ManualView : UserControl
 {
     private readonly TimeZoneInfo zone;
+    private readonly Segment? original;
     public Segment? Result { get; private set; }
     internal ManualView(Settings settings, Segment? original, DateTime selected, TimeZoneInfo zone)
     {
         this.zone = zone;
+        this.original = original;
         InitializeComponent();
         AppName.ItemsSource = settings.Rules.Select(r => r.Name).Distinct().ToList();
         AppName.Text = original?.App ?? settings.Rules.FirstOrDefault(r => r.Enabled)?.Name ?? "工作学习";
@@ -32,7 +34,8 @@ public partial class ManualView : UserControl
             if (!DateTime.TryParseExact(StartTime.Text.Trim(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var start)
                 || !DateTime.TryParseExact(EndTime.Text.Trim(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var end))
                 throw new ArgumentException("请输入完整时间，格式：yyyy-MM-dd HH:mm:ss。");
-            var startUtc = Reports.ToUtc(start, zone); var endUtc = Reports.ToUtc(end, zone);
+            var startUtc = Reports.EditedTimeUtc(start, zone, original?.Start);
+            var endUtc = Reports.EditedTimeUtc(end, zone, original?.End);
             if (endUtc <= startUtc) throw new ArgumentException("结束时间必须晚于开始时间。");
             if (endUtc > DateTimeOffset.UtcNow) throw new ArgumentException("结束时间不能在未来。");
             if (string.IsNullOrWhiteSpace(AppName.Text)) throw new ArgumentException("请填写软件名称。");

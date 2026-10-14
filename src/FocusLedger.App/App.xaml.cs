@@ -96,7 +96,7 @@ public partial class App : Application
                 {
                     finish.Stop(); tracker.Poll();
                     var rows = store.ReadAll();
-                    var success = rows.Count > 0 && !tracker.Status.StartsWith("保存失败");
+                    var success = !tracker.Status.StartsWith("保存失败") && store.IntegrityCheck() == "ok";
                     File.WriteAllText(Path.Combine(DataDirectory, "runtime-check.txt"),
                         $"{(success ? "PASS" : "FAIL")}\nStatus: {tracker.Status}\nStored segments: {rows.Count}\nObserved seconds: {rows.Sum(s => s.Seconds):0.###}\nIntegrity: {store.IntegrityCheck()}\nTray initialized, collector timer ran, session/power event subscriptions succeeded.\n");
                     Shutdown(success ? 0 : 1);
@@ -322,7 +322,10 @@ public partial class App : Application
             var expected = store.ReadAll().Where(s => s.IsEffective).Sum(s => s.Seconds);
             var changedSettings = SettingsFile.Clone(tracker.Settings); changedSettings.ApplyIdleMinutesToAll(5);
             var migratedDirectory = Path.Combine(checkRoot, "migration-target");
+            window.OpenManualForCheck();
             ApplySettings(changedSettings, migratedDirectory, false);
+            if (window.ManualHost.Content is not null || window.ManualPage.Visibility == Visibility.Visible)
+                throw new InvalidOperationException("Data switch retained a stale manual editor.");
             if (!File.Exists(oldDatabase) || !DataLocation.Same(location.Load(), migratedDirectory) || tracker.Settings.DefaultIdleMinutes != 5
                 || Math.Abs(store.ReadAll().Where(s => s.IsEffective).Sum(s => s.Seconds) - expected) > .001)
                 throw new InvalidOperationException("End-to-end data migration failed.");
@@ -330,6 +333,15 @@ public partial class App : Application
             ApplySettings(changedSettings, checkRoot, true);
             if (!DataLocation.Same(DataDirectory, checkRoot) || tracker.Settings.DefaultIdleMinutes != 3)
                 throw new InvalidOperationException("Switching to existing data failed.");
+            foreach (var period in Enum.GetValues<Period>())
+            {
+                window.SetPeriodForCheck(window.DateSelect.DisplayDateStart!.Value, period);
+                window.MovePeriod(-1);
+                if (window.DateSelect.SelectedDate != window.DateSelect.DisplayDateStart) throw new Exception("Minimum date navigation escaped bounds.");
+                window.SetPeriodForCheck(window.DateSelect.DisplayDateEnd!.Value, period);
+                window.MovePeriod(1);
+                if (window.DateSelect.SelectedDate != window.DateSelect.DisplayDateEnd) throw new Exception("Maximum date navigation escaped bounds.");
+            }
             File.WriteAllText(Path.Combine(checkRoot, "self-check.txt"), $"PASS\nDatabase integrity: {store.IntegrityCheck()}\nNative capture: {nativeSample.Kind}\nUI: inline overview, settings, themes, backup, manual entry rendered; three palettes; settings save and backup verified; single window; custom tray icon loaded\nLayout: table display and editor vertical centers checked in normal/compact layouts\nChrome: caption and resize hit tests, minimize/maximize/restore/hide, themed scrollbar page-down and mouse wheel passed\nData migration and switching existing ledger passed\nNo tracking timer started\n");
             window.AllowClose = true;
             Shutdown(0);

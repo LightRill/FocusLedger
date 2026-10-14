@@ -262,6 +262,97 @@ tests.Add(("Fractional sample timestamps never create phantom idle tails", () =>
     Equal(1999, Effective(db.ReadAll())); Equal(1, db.ReadAll().Count);
 }));
 
+tests.Add(("Spring DST day has 23 real hourly buckets without gaps", () =>
+{
+    var zone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+    var range = Reports.Range(new(2026, 3, 8), Period.Day, zone);
+    var day = new Segment(1, range.Start, range.End, "Work", SegmentKind.Active);
+    var buckets = Reports.Buckets([day], range, Period.Day, zone);
+    Equal(23, buckets.Count); Equal(23 * 3600, buckets.Sum(b => b.Seconds));
+    True(buckets.All(b => b.Seconds == 3600));
+}));
+tests.Add(("Autumn DST day retains both repeated hours", () =>
+{
+    var zone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+    var range = Reports.Range(new(2026, 11, 1), Period.Day, zone);
+    var day = new Segment(1, range.Start, range.End, "Work", SegmentKind.Active);
+    var buckets = Reports.Buckets([day], range, Period.Day, zone);
+    Equal(25, buckets.Count); Equal(25 * 3600, buckets.Sum(b => b.Seconds));
+    True(buckets.All(b => b.Seconds == 3600));
+    Equal(2, buckets.Count(b => TimeZoneInfo.ConvertTime(b.Start, zone).Hour == 1));
+}));
+tests.Add(("Midnight DST transition remains a valid report boundary", () =>
+{
+    var change = TimeZoneInfo.AdjustmentRule.CreateAdjustmentRule(new(2020, 1, 1), new(2030, 12, 31), TimeSpan.FromHours(1),
+        TimeZoneInfo.TransitionTime.CreateFixedDateRule(new(1, 1, 1), 3, 1),
+        TimeZoneInfo.TransitionTime.CreateFixedDateRule(new(1, 1, 1), 10, 1));
+    var zone = TimeZoneInfo.CreateCustomTimeZone("Midnight-test", TimeSpan.FromHours(2), "Midnight", "Standard", "Summer", [change]);
+    var range = Reports.Range(new(2026, 3, 1), Period.Day, zone);
+    Equal(23 * 3600, (range.End - range.Start).TotalSeconds);
+    Equal(23, Reports.Buckets([], range, Period.Day, zone).Count);
+    var month = Reports.Range(new(2026, 3, 1), Period.Month, zone);
+    var buckets = Reports.Buckets([new Segment(1, month.Start, month.End, "Work", SegmentKind.Active)], month, Period.Month, zone);
+    Equal(31, buckets.Count); Equal(23 * 3600, buckets[0].Seconds); Equal(24 * 3600, buckets[1].Seconds);
+    Equal((month.End - month.Start).TotalSeconds, buckets.Sum(b => b.Seconds));
+}));
+tests.Add(("Newer database format is rejected without changing its bytes", () =>
+{
+    var path = Path.Combine(temp, "future-version.db");
+    using (var db = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={path};Pooling=False"))
+    {
+        db.Open(); using var command = db.CreateCommand();
+        command.CommandText = "CREATE TABLE future_data(value TEXT); INSERT INTO future_data VALUES('keep'); PRAGMA user_version=99;";
+        command.ExecuteNonQuery();
+    }
+    var before = File.ReadAllBytes(path);
+    Throws(() => { using var rejected = new LedgerStore(path); });
+    True(before.SequenceEqual(File.ReadAllBytes(path)), "Unsupported database was modified");
+    using var exclusive = new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+}));
+
+tests.Add(("Unrelated SQLite files are rejected without modification", () =>
+{
+    var path = Path.Combine(temp, "unrelated.db");
+    using (var db = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={path};Pooling=False"))
+    {
+        db.Open(); using var command = db.CreateCommand();
+        command.CommandText = "CREATE TABLE personal_notes(value TEXT); INSERT INTO personal_notes VALUES('keep');";
+        command.ExecuteNonQuery();
+    }
+    var before = File.ReadAllBytes(path);
+    Throws(() => { using var rejected = new LedgerStore(path); });
+    True(before.SequenceEqual(File.ReadAllBytes(path)));
+}));
+tests.Add(("Collector latest-record lookup uses the end-time index", () =>
+{
+    using var db = Db("indexed-append");
+    using var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={db.DatabasePath};Pooling=False");
+    connection.Open(); using var command = connection.CreateCommand();
+    command.CommandText = "EXPLAIN QUERY PLAN SELECT * FROM segments ORDER BY end_ms DESC LIMIT 1";
+    using var reader = command.ExecuteReader(); var details = "";
+    while (reader.Read()) details += reader.GetString(3);
+    True(details.Contains("ix_segments_end")); True(!details.Contains("TEMP B-TREE"));
+}));
+
+tests.Add(("Editing unchanged local times preserves precise instants across repeated DST hour", () =>
+{
+    var zone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+    foreach (var offset in new[] { -4, -5 })
+    {
+        var original = new DateTimeOffset(2026, 11, 1, 1, 30, 0, TimeSpan.FromHours(offset)).AddMilliseconds(123);
+        var result = Reports.EditedTimeUtc(new(2026, 11, 1, 1, 30, 0), zone, original);
+        True(result == original);
+    }
+}));
+tests.Add(("Ambiguous and skipped manual times require correction instead of silently shifting", () =>
+{
+    var zone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+    Throws(() => Reports.EditedTimeUtc(new(2026, 11, 1, 1, 30, 0), zone));
+    Throws(() => Reports.EditedTimeUtc(new(2026, 3, 8, 2, 30, 0), zone));
+    var regular = Reports.EditedTimeUtc(new(2026, 3, 8, 3, 30, 0), zone);
+    Equal(7, regular.UtcDateTime.Hour);
+}));
+
 var failed = 0;
 foreach (var test in tests)
 {

@@ -26,6 +26,8 @@ public partial class MainWindow
             Period.Year => date.ToString("yyyy 年 M 月"),
             _ => date.ToString("yyyy 年 M 月 d 日")
         };
+        if (CurrentPeriod == Period.Day && (zone.IsAmbiguousTime(date.DateTime) || zone.IsAmbiguousTime(end.DateTime)))
+            title = $"{date:MM 月 dd 日 HH:mm zzz}–{end:HH:mm zzz}";
         ShowChartDetail(title, bucket.Seconds, TrendCanvas.TranslatePoint(point, ChartOverlay));
     }
 

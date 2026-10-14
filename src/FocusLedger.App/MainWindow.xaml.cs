@@ -107,6 +107,9 @@ public partial class MainWindow : Window
     {
         store = nextStore; settingsPath = nextSettingsPath; dataDirectory = nextDataDirectory;
         SettingsPage.Content = null; BackupSource.Text = dataDirectory;
+        ManualHost.Content = null;
+        BackupResult.Text = "";
+        ShowPage(0);
         BackupFolder.Text = Path.Combine(dataDirectory, "backups");
         Refresh();
     }
@@ -185,9 +188,10 @@ public partial class MainWindow : Window
 
     private void DrawChart()
     {
-        if (!initialized || TrendCanvas.ActualWidth < 20 || buckets.Count == 0) return;
+        if (!initialized || TrendCanvas.ActualWidth < 20) return;
         TrendCanvas.Children.Clear();
         trendBars.Clear();
+        if (buckets.Count == 0) { HideChartDetail(); return; }
         var width = TrendCanvas.ActualWidth;
         var max = Math.Max(CurrentPeriod == Period.Day ? 3600 : 1800, buckets.Max(b => b.Seconds));
         const double chartHeight = 118;
@@ -264,7 +268,7 @@ public partial class MainWindow : Window
         for (int day = 0; day < count; day++)
         {
             var date = first.AddDays(day);
-            var parts = Reports.Clip(all, Reports.ToUtc(date, zone), Reports.ToUtc(date.AddDays(1), zone));
+            var parts = Reports.Clip(all, Reports.BoundaryUtc(date, zone), Reports.BoundaryUtc(date.AddDays(1), zone));
             var seconds = parts.Where(s => s.IsEffective).Sum(s => s.Seconds);
             var cell = new Border { Width = cellWidth, Height = cellHeight, CornerRadius = new CornerRadius(2),
                 Background = ThemeManager.Heat(seconds) };
@@ -287,10 +291,15 @@ public partial class MainWindow : Window
     private void Chart_SizeChanged(object sender, SizeChangedEventArgs e) => DrawChart();
     private void Previous_Click(object sender, RoutedEventArgs e) => MovePeriod(-1);
     private void Next_Click(object sender, RoutedEventArgs e) => MovePeriod(1);
-    private void MovePeriod(int direction)
+    internal void MovePeriod(int direction)
     {
         var date = DateSelect.SelectedDate ?? DateTime.Today;
-        DateSelect.SelectedDate = CurrentPeriod switch { Period.Week => date.AddDays(7 * direction), Period.Month => date.AddMonths(direction), Period.Year => date.AddYears(direction), _ => date.AddDays(direction) };
+        var minimum = DateSelect.DisplayDateStart!.Value;
+        var maximum = DateSelect.DisplayDateEnd!.Value;
+        DateTime next;
+        try { next = CurrentPeriod switch { Period.Week => date.AddDays(7 * direction), Period.Month => date.AddMonths(direction), Period.Year => date.AddYears(direction), _ => date.AddDays(direction) }; }
+        catch (ArgumentOutOfRangeException) { next = direction < 0 ? minimum : maximum; }
+        DateSelect.SelectedDate = next < minimum ? minimum : next > maximum ? maximum : next;
     }
     private void Pause_Click(object sender, RoutedEventArgs e) => tracker.TogglePause();
     private void Add_Click(object sender, RoutedEventArgs e) => EditSegment(null);

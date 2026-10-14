@@ -22,7 +22,7 @@ Windows 专注时间记录工具。自动记录学习与工作中的专注时间
 
 ## 开始使用
 
-需要 Windows x64 和 .NET 10 Windows Desktop Runtime（x64）。
+从 [GitHub Releases](https://github.com/LightRill/FocusLedger/releases/latest) 下载 Windows x64 压缩包，完整解压后运行。需要安装 [.NET 10 Windows Desktop Runtime（x64）](https://dotnet.microsoft.com/download/dotnet/10.0)，建议使用最新的 10.0 补丁版本。
 
 1. 打开程序目录中的 `FocusLedger.exe`。
 2. 进入“设置 → 计时与软件”，添加需要统计的软件，调整空闲阈值并保存。
@@ -81,7 +81,7 @@ FocusLedger 根据前台软件和键鼠空闲时间估算专注时间。同一�
 .\build.ps1 -Test -Publish
 ```
 
-输出位于 `publish` 文件夹，运行 `publish\FocusLedger.exe` 即可。
+输出位于 `publish` 文件夹，运行 `publish\FocusLedger.exe` 即可。发布打包可运行 `./tools/Package-Release.ps1`，ZIP 与 SHA256 校验文件生成在 `artifacts` 中；打包只包含程序、说明和许可证。
 
 ## 开源许可证
 

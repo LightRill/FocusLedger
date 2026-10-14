@@ -17,7 +17,7 @@ public static class Reports
             _ => day
         };
         var end = period switch { Period.Week => start.AddDays(7), Period.Month => start.AddMonths(1), Period.Year => start.AddYears(1), _ => start.AddDays(1) };
-        return new(ToUtc(start, zone), ToUtc(end, zone), period switch
+        return new(BoundaryUtc(start, zone), BoundaryUtc(end, zone), period switch
         {
             Period.Day => start.ToString("yyyy 年 M 月 d 日"),
             Period.Week => $"{start:yyyy.MM.dd} — {end.AddDays(-1):MM.dd}",
@@ -28,6 +28,31 @@ public static class Reports
     public static DateTimeOffset ToUtc(DateTime local, TimeZoneInfo zone) =>
         new(TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(local, DateTimeKind.Unspecified), zone));
 
+    public static DateTimeOffset EditedTimeUtc(DateTime local, TimeZoneInfo zone, DateTimeOffset? original = null)
+    {
+        local = DateTime.SpecifyKind(local, DateTimeKind.Unspecified);
+        if (original is not null)
+        {
+            var previous = TimeZoneInfo.ConvertTime(original.Value, zone).DateTime;
+            if (local.Ticks == previous.Ticks - previous.Ticks % TimeSpan.TicksPerSecond)
+                return original.Value; // Preserve offset and sub-second precision when text is unchanged.
+        }
+        if (zone.IsInvalidTime(local)) throw new ArgumentException("该时间处于夏令时跳过的区间，请选择有效时间。");
+        if (zone.IsAmbiguousTime(local)) throw new ArgumentException("该时间因夏令时切换出现两次，请选择没有歧义的时间。");
+        return ToUtc(local, zone);
+    }
+
+    // A calendar boundary may fall in a skipped or repeated local interval.
+    // Start at the first valid instant and choose the earlier occurrence of repeats.
+    public static DateTimeOffset BoundaryUtc(DateTime local, TimeZoneInfo zone)
+    {
+        local = DateTime.SpecifyKind(local, DateTimeKind.Unspecified);
+        while (zone.IsInvalidTime(local)) local = local.AddMinutes(1);
+        return zone.IsAmbiguousTime(local)
+            ? new DateTimeOffset(local, zone.GetAmbiguousTimeOffsets(local).Max()).ToUniversalTime()
+            : ToUtc(local, zone);
+    }
+
     public static List<Segment> Clip(IEnumerable<Segment> source, DateTimeOffset start, DateTimeOffset end) =>
         source.Where(s => s.End > start && s.Start < end)
             .Select(s => s with { Start = s.Start < start ? start : s.Start, End = s.End > end ? end : s.End }).ToList();
@@ -35,13 +60,26 @@ public static class Reports
     public static List<SummaryBucket> Buckets(IEnumerable<Segment> source, PeriodRange range, Period period, TimeZoneInfo zone)
     {
         var all = source.ToList();
-        var cursor = TimeZoneInfo.ConvertTime(range.Start, zone).DateTime;
+        if (period == Period.Day)
+        {
+            List<SummaryBucket> hours = [];
+            // Walk actual elapsed hours: DST days need 23 or 25 buckets, not 24.
+            for (var instant = range.Start; instant < range.End; instant = instant.AddHours(1))
+            {
+                var nextHour = instant.AddHours(1);
+                if (nextHour > range.End) nextHour = range.End;
+                hours.Add(new(TimeZoneInfo.ConvertTime(instant, zone).ToString("HH"), instant,
+                    Clip(all, instant, nextHour).Where(s => s.IsEffective).Sum(s => s.Seconds)));
+            }
+            return hours;
+        }
+        var cursor = TimeZoneInfo.ConvertTime(range.Start, zone).Date;
         List<SummaryBucket> result = [];
-        while (ToUtc(cursor, zone) < range.End)
+        while (BoundaryUtc(cursor, zone) < range.End)
         {
             var next = period switch { Period.Day => cursor.AddHours(1), Period.Year => cursor.AddMonths(1), _ => cursor.AddDays(1) };
-            var startUtc = ToUtc(cursor, zone);
-            var endUtc = ToUtc(next, zone);
+            var startUtc = BoundaryUtc(cursor, zone);
+            var endUtc = BoundaryUtc(next, zone);
             var parts = Clip(all, startUtc, endUtc);
             result.Add(new(period switch { Period.Day => cursor.ToString("HH"), Period.Year => $"{cursor.Month}月", _ => cursor.ToString("MM/dd") },
                 startUtc, parts.Where(s => s.IsEffective).Sum(s => s.Seconds)));
