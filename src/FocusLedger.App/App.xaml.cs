@@ -204,9 +204,10 @@ public partial class App : Application
         var menu = new Forms.ContextMenuStrip
         {
             Font = new System.Drawing.Font("Microsoft YaHei UI", 10), ShowImageMargin = false,
-            Padding = new Forms.Padding(6), Renderer = new Forms.ToolStripProfessionalRenderer(new ThemeManager.TrayColors())
+            Padding = new Forms.Padding(6), Renderer = new TrayMenuStyle.Renderer()
         };
-        var title = menu.Items.Add("FocusLedger · 专注时账"); title.Enabled = false;
+        var title = new Forms.ToolStripLabel("FocusLedger · 专注时账") { Font = new System.Drawing.Font("Microsoft YaHei UI", 9) };
+        menu.Items.Add(title);
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("打开概览", null, (_, _) => { ShowWindow(); window!.ShowOverviewForCheck(); });
         var pause = menu.Items.Add("暂停记录", null, (_, _) => tracker!.TogglePause());
@@ -215,11 +216,8 @@ public partial class App : Application
         menu.Items.Add("打开数据目录", null, (_, _) => Process.Start(new ProcessStartInfo(DataDirectory) { UseShellExecute = true }));
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("退出", null, (_, _) => ExitApp());
-        menu.Opening += (_, _) =>
-        {
-            menu.BackColor = ThemeManager.Native("Surface"); menu.ForeColor = ThemeManager.Native("Ink");
-            foreach (Forms.ToolStripItem item in menu.Items) { item.Padding = new Forms.Padding(9, 6, 9, 6); item.ForeColor = menu.ForeColor; }
-        };
+        menu.Opening += (_, _) => TrayMenuStyle.Apply(menu);
+        TrayMenuStyle.Apply(menu);
         using (var stream = GetResourceStream(new Uri("pack://application:,,,/Assets/focusledger.ico")).Stream)
         using (var original = new System.Drawing.Icon(stream)) trayIcon = new System.Drawing.Icon(original, Forms.SystemInformation.SmallIconSize);
         tray = new Forms.NotifyIcon { Icon = trayIcon, Text = "FocusLedger · 专注时账", Visible = visible, ContextMenuStrip = menu };
@@ -297,6 +295,16 @@ public partial class App : Application
             ApplySettings(reset, DataDirectory, false);
             if (Application.Current.Windows.Count != 1) throw new Exception("Page navigation opened extra windows.");
             SetupTray(false);
+            foreach (var palette in new[] { "Dark", "Ocean", "Forest" })
+            {
+                ThemeManager.Apply(palette);
+                var menu = tray!.ContextMenuStrip!;
+                TrayMenuStyle.Apply(menu);
+                menu.CreateControl(); menu.PerformLayout();
+                using var bitmap = new System.Drawing.Bitmap(menu.Width, menu.Height);
+                menu.DrawToBitmap(bitmap, new System.Drawing.Rectangle(0, 0, menu.Width, menu.Height));
+                bitmap.Save(Path.Combine(checkRoot, $"tray-{palette}.png"), System.Drawing.Imaging.ImageFormat.Png);
+            }
             ChromeChecks.Run(window);
             var nativeSample = WindowsActivity.Capture(tracker.Settings, false, false);
             tracker.TogglePause();

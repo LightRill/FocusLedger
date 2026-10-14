@@ -3,6 +3,8 @@
   <ResourceDictionary>
    <ResourceDictionary.MergedDictionaries><ResourceDictionary Source="Chrome.xaml"/><ResourceDictionary Source="Tables.xaml"/></ResourceDictionary.MergedDictionaries>
   <FontFamily x:Key="AppFont">Microsoft YaHei UI</FontFamily>
+  <Style x:Key="PageTitle" TargetType="TextBlock"><Setter Property="FontFamily" Value="{DynamicResource AppFont}"/><Setter Property="FontSize" Value="25"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Foreground" Value="{DynamicResource Ink}"/></Style>
+  <Style x:Key="SidebarFooter" TargetType="TextBlock"><Setter Property="FontSize" Value="10"/><Setter Property="Foreground" Value="{DynamicResource SidebarMuted}"/></Style>
   <Style TargetType="Window"><Setter Property="FontFamily" Value="{DynamicResource AppFont}"/><Setter Property="FontSize" Value="13"/><Setter Property="Background" Value="{DynamicResource Page}"/><Setter Property="Foreground" Value="{DynamicResource Ink}"/><Setter Property="Icon" Value="Assets/focusledger.ico"/><Setter Property="TextOptions.TextFormattingMode" Value="Display"/><Setter Property="UseLayoutRounding" Value="True"/></Style>
   <Style TargetType="Button">
    <Setter Property="FontFamily" Value="{DynamicResource AppFont}"/><Setter Property="Background" Value="{DynamicResource Surface}"/><Setter Property="Foreground" Value="{DynamicResource Ink}"/><Setter Property="BorderBrush" Value="{DynamicResource Line}"/><Setter Property="Padding" Value="17,10"/><Setter Property="Cursor" Value="Hand"/><Setter Property="Margin" Value="0,0,8,0"/>
