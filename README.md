@@ -1,6 +1,6 @@
 # FocusLedger · 专注时账
 
-Windows 本地学习工作时间记录工具，当前版本 v0.3.10。默认统计 VS Code、VS Code Insiders、Codex 与 ChatGPT 桌面应用；Zotero 已预置但默认关闭。
+Windows 本地学习工作时间记录工具，当前版本 v0.3.11。默认统计 VS Code、VS Code Insiders、Codex 与 ChatGPT 桌面应用；Zotero 已预置但默认关闭。
 
 ## 界面预览
 

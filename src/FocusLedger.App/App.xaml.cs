@@ -203,12 +203,9 @@ public partial class App : Application
     {
         var menu = new Forms.ContextMenuStrip
         {
-            Font = new System.Drawing.Font("Microsoft YaHei UI", 10), ShowImageMargin = false,
+            Font = new System.Drawing.Font("Microsoft YaHei UI", 9), ShowImageMargin = false,
             Padding = new Forms.Padding(6), Renderer = new TrayMenuStyle.Renderer()
         };
-        var title = new Forms.ToolStripLabel("FocusLedger · 专注时账") { Font = new System.Drawing.Font("Microsoft YaHei UI", 9) };
-        menu.Items.Add(title);
-        menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("打开概览", null, (_, _) => { ShowWindow(); window!.ShowOverviewForCheck(); });
         var pause = menu.Items.Add("暂停记录", null, (_, _) => tracker!.TogglePause());
         menu.Items.Add("设置", null, (_, _) => { ShowWindow(); window!.OpenSettings(); });
