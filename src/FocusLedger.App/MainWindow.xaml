@@ -1,0 +1,91 @@
+<Window x:Class="FocusLedger.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="FocusLedger · 专注时账" Style="{StaticResource {x:Type Window}}" Width="1280" Height="860" MinWidth="1100" MinHeight="700" WindowStartupLocation="CenterScreen" Closing="Window_Closing">
+ <Grid Background="{DynamicResource Page}">
+  <Grid.ColumnDefinitions><ColumnDefinition Width="208"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+  <Border Background="{DynamicResource Sidebar}" Padding="22,30">
+   <DockPanel>
+    <StackPanel DockPanel.Dock="Bottom">
+     <TextBlock Text="LOCAL FIRST" Foreground="{DynamicResource SidebarMuted}" FontSize="10" FontWeight="Bold" Margin="0,0,0,8"/>
+     <TextBlock Text="数据只留在这台电脑" Foreground="{DynamicResource SidebarInk}" FontSize="11"/>
+     <TextBlock Text="v0.3 · Windows" Foreground="{DynamicResource SidebarMuted}" FontSize="10" Margin="0,6,0,0"/>
+    </StackPanel>
+    <StackPanel>
+     <Image Source="Assets/focusledger.ico" Width="48" Height="48" HorizontalAlignment="Left" Margin="0,0,0,18"/>
+     <TextBlock Text="FocusLedger" FontSize="19" FontWeight="SemiBold" Foreground="White"/>
+     <TextBlock Text="专 注 时 账" Foreground="{DynamicResource SidebarMuted}" FontSize="12" Margin="0,8,0,36"/>
+     <Button x:Name="OverviewNav" Content="概览" Click="Today_Click" Background="{DynamicResource Accent}" Foreground="White" BorderBrush="{DynamicResource Accent}" HorizontalContentAlignment="Left" Margin="0,0,0,10"/>
+     <Button x:Name="SettingsNav" HorizontalContentAlignment="Left" Content="设置" Click="Settings_Click" Background="Transparent" Foreground="{DynamicResource SidebarInk}" BorderBrush="{DynamicResource Sidebar}" Margin="0,0,0,10"/>
+     <Button x:Name="BackupNav" HorizontalContentAlignment="Left" Content="备份数据" Click="Backup_Click" Background="Transparent" Foreground="{DynamicResource SidebarInk}" BorderBrush="{DynamicResource Sidebar}" Margin="0,0,0,28"/>
+     <TextBlock Text="给阅读与思考，&#x0a;也留一份时间。" Foreground="{DynamicResource SidebarMuted}" FontSize="12" LineHeight="23"/>
+    </StackPanel>
+   </DockPanel>
+  </Border>
+  <Grid Grid.Column="1"><ScrollViewer x:Name="OverviewPage" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+   <StackPanel Margin="30,26,30,24">
+    <DockPanel Margin="0,0,0,18">
+     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"><Button x:Name="PauseButton" Content="暂停记录" Click="Pause_Click"/><Button Content="＋ 补记时间" Style="{StaticResource PrimaryButton}" Click="Add_Click" Margin="0"/></StackPanel>
+     <StackPanel><TextBlock Text="把投入的时间，看清楚。" FontSize="25" FontWeight="SemiBold"/><TextBlock Text="自动记录 · 保留短暂思考 · 空闲阈值可在设置中调整" Style="{StaticResource Caption}" Margin="0,9,0,0"/></StackPanel>
+    </DockPanel>
+    <Border Background="{DynamicResource Soft}" CornerRadius="8" Padding="14,11" Margin="0,0,0,22">
+     <DockPanel><TextBlock x:Name="LastAppText" DockPanel.Dock="Right" Foreground="{DynamicResource Muted}" FontSize="11" VerticalAlignment="Center"/><StackPanel Orientation="Horizontal"><Ellipse Width="7" Height="7" Fill="{DynamicResource Accent}" Margin="0,0,10,0"/><TextBlock x:Name="StatusText" Text="准备记录" FontSize="12"/></StackPanel></DockPanel>
+    </Border>
+    <DockPanel Margin="0,0,0,18">
+     <Button DockPanel.Dock="Right" Content="导出 CSV" Click="Export_Click" Margin="10,0,0,0"/>
+     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button Content="‹" Click="Previous_Click" Padding="12,6"/><DatePicker x:Name="DateSelect" Width="138" VerticalContentAlignment="Center" SelectedDateChanged="Period_Changed"/><Button Content="›" Click="Next_Click" Padding="12,6" Margin="8,0,0,0"/></StackPanel>
+     <StackPanel Orientation="Horizontal"><ComboBox x:Name="PeriodSelect" Width="85" SelectionChanged="Period_Changed" SelectedIndex="0"><ComboBoxItem Content="日"/><ComboBoxItem Content="周"/><ComboBoxItem Content="月"/><ComboBoxItem Content="年"/></ComboBox><TextBlock x:Name="RangeText" Margin="16,0,0,0" VerticalAlignment="Center" FontWeight="SemiBold"/></StackPanel>
+    </DockPanel>
+    <Grid Margin="0,0,0,20">
+     <Grid.ColumnDefinitions><ColumnDefinition Width="1.2*"/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+     <Border Style="{StaticResource Card}" Background="{DynamicResource Soft}" BorderBrush="{DynamicResource Line}" Margin="0,0,12,0"><StackPanel><TextBlock Text="有效投入" Foreground="{DynamicResource Accent}"/><TextBlock x:Name="TotalText" Text="0 分 00 秒" FontSize="29" FontWeight="SemiBold" Margin="0,10,0,8"/><TextBlock x:Name="CoverageText" Text="等待记录" FontSize="11" Foreground="{DynamicResource Accent}"/></StackPanel></Border>
+     <Border Grid.Column="1" Style="{StaticResource Card}" Margin="0,0,12,0"><StackPanel><TextBlock Text="自动记录" Style="{StaticResource Caption}"/><TextBlock x:Name="AutoText" FontSize="24" FontWeight="SemiBold" Margin="0,13,0,11"/><TextBlock Text="包含空闲阈值内的阅读与思考" FontSize="11" Foreground="{DynamicResource Muted}"/></StackPanel></Border>
+     <Border Grid.Column="2" Style="{StaticResource Card}"><StackPanel><TextBlock Text="人工补记 / 修正" Style="{StaticResource Caption}"/><TextBlock x:Name="ManualText" FontSize="24" FontWeight="SemiBold" Margin="0,13,0,11"/><TextBlock x:Name="LongestText" FontSize="11" Foreground="{DynamicResource Muted}"/></StackPanel></Border>
+    </Grid>
+    <Grid Margin="0,0,0,20">
+     <Grid.ColumnDefinitions><ColumnDefinition Width="1.8*"/><ColumnDefinition/></Grid.ColumnDefinitions>
+     <Border Style="{StaticResource Card}" Margin="0,0,12,0"><StackPanel><DockPanel><TextBlock Text="投入趋势" FontSize="15" FontWeight="SemiBold"/><TextBlock x:Name="ChartHint" Text="每小时" HorizontalAlignment="Right" Style="{StaticResource Caption}"/></DockPanel><Canvas x:Name="TrendCanvas" Height="156" Margin="0,16,0,0" SizeChanged="Chart_SizeChanged"/><TextBlock Text="灰点表示该时段没有可用记录；不等同于工作了 0 分钟。" FontSize="10" Foreground="{DynamicResource Muted}" Margin="0,8,0,0"/></StackPanel></Border>
+     <Border Grid.Column="1" Style="{StaticResource Card}"><StackPanel><TextBlock Text="软件分布" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,18"/><StackPanel x:Name="AppBreakdown"/></StackPanel></Border>
+    </Grid>
+    <Border x:Name="YearHeatmapCard" Style="{StaticResource Card}" Margin="0,0,0,20" Visibility="Collapsed"><StackPanel><DockPanel><TextBlock Text="一年的投入" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="每格一天 · 悬停查看时长" HorizontalAlignment="Right" Style="{StaticResource Caption}"/></DockPanel><WrapPanel x:Name="YearHeatmap" Margin="0,15,0,8"/><TextBlock Text="灰色：无记录　浅色：有记录但无有效投入　深色：有效投入较多" FontSize="11" Foreground="{DynamicResource Muted}"/></StackPanel></Border>
+    <Border Style="{StaticResource Card}">
+     <StackPanel>
+      <DockPanel Margin="0,0,0,14"><StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button Content="编辑选中" Click="Edit_Click" Padding="10,6"/><Button Content="删除选中" Click="Delete_Click" Padding="10,6" Margin="0"/></StackPanel><StackPanel><TextBlock x:Name="TimelineTitle" Text="时间明细" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="仅列有效片段；空闲和未采集区间不计入总时长。" Style="{StaticResource Caption}" Margin="0,6,0,0"/></StackPanel></DockPanel>
+      <DataGrid x:Name="Timeline" IsReadOnly="True" Height="205" MouseDoubleClick="Timeline_DoubleClick">
+       <DataGrid.Columns>
+        <DataGridTextColumn Header="开始" Binding="{Binding StartText}" Width="145"/>
+        <DataGridTextColumn Header="结束" Binding="{Binding EndText}" Width="145"/>
+        <DataGridTextColumn Header="软件" Binding="{Binding App}" Width="*"/>
+        <DataGridTextColumn Header="时长" Binding="{Binding Duration}" Width="125"/>
+        <DataGridTextColumn Header="来源" Binding="{Binding Source}" Width="100"/>
+       </DataGrid.Columns>
+      </DataGrid>
+      <TextBlock x:Name="EmptyHint" Text="还没有记录。切换到 VS Code、Codex 或 ChatGPT 后会自动开始。" Foreground="{DynamicResource Muted}" Margin="0,12,0,0"/>
+     </StackPanel>
+    </Border>
+    <TextBlock x:Name="FooterText" Text="关闭窗口后继续在托盘记录 · 从托盘菜单可彻底退出" Style="{StaticResource Caption}" Margin="0,15,0,0"/>
+   </StackPanel>
+  </ScrollViewer>
+  <ContentControl x:Name="SettingsPage" Visibility="Collapsed"/>
+  <ScrollViewer x:Name="BackupPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+   <StackPanel Margin="30" MaxWidth="920" HorizontalAlignment="Stretch">
+    <TextBlock Text="为投入，留一份副本。" FontSize="25" FontWeight="SemiBold"/>
+    <TextBlock Text="在这里备份数据库与设置，记录时也能安全生成副本。" Style="{StaticResource Caption}" Margin="0,10,0,28"/>
+    <Border Style="{StaticResource Card}" Margin="0,0,0,20"><StackPanel>
+     <TextBlock Text="当前数据位置" FontSize="15" FontWeight="SemiBold"/>
+     <TextBlock x:Name="BackupSource" TextWrapping="Wrap" Foreground="{DynamicResource Muted}" Margin="0,12,0,16"/>
+     <Button Content="打开数据文件夹" Click="OpenData_Click" HorizontalAlignment="Left"/>
+    </StackPanel></Border>
+    <Border Style="{StaticResource Card}" Margin="0,0,0,20"><StackPanel>
+     <TextBlock Text="创建备份" FontSize="19" FontWeight="SemiBold" Margin="0,0,0,16"/>
+     <TextBlock Text="保存到" Margin="0,0,0,8"/>
+     <DockPanel Margin="0,0,0,18"><Button DockPanel.Dock="Right" Content="选择文件夹…" Click="ChooseBackupFolder_Click" Margin="10,0,0,0"/><TextBox x:Name="BackupFolder"/></DockPanel>
+     <TextBlock Text="每次生成独立文件夹，包含 focusledger.db 与 settings.json，可在设置中切换到该文件夹使用。" TextWrapping="Wrap" Foreground="{DynamicResource Muted}" Margin="0,0,0,18"/>
+     <Button Content="创建完整备份" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Click="CreateBackup_Click"/>
+     <TextBlock x:Name="BackupResult" TextWrapping="Wrap" Margin="0,18,0,0"/>
+    </StackPanel></Border>
+    <Border Background="{DynamicResource Soft}" CornerRadius="12" Padding="22"><TextBlock Text="备份完成后，可把整份备份文件夹复制到其他磁盘。导出当前日、周、月、年的表格，请前往概览 → 导出 CSV。" TextWrapping="Wrap" LineHeight="25"/></Border>
+   </StackPanel>
+  </ScrollViewer>
+  <ScrollViewer x:Name="ManualPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto"><ContentControl x:Name="ManualHost" Width="660" HorizontalAlignment="Left" Margin="10,0"/></ScrollViewer>
+  </Grid>
+ </Grid>
+</Window>

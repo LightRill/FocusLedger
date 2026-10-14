@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FocusLedger.Core/FocusLedger.Core.csproj" />
+    <Project Path="src/FocusLedger.Storage/FocusLedger.Storage.csproj" />
+    <Project Path="src/FocusLedger.App/FocusLedger.App.csproj" />
+  </Folder>
+  <Folder Name="/tests/"><Project Path="tests/FocusLedger.Tests/FocusLedger.Tests.csproj" /></Folder>
+</Solution>

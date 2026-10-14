@@ -1,0 +1,21 @@
+FocusLedger · 专注时账
+Copyright (C) 2026 LightRill
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+Third-party libraries retain their original licenses:
+Microsoft.Data.Sqlite 10.0.13 — MIT, Copyright Microsoft Corporation.
+SQLitePCLRaw 2.1.14 — Apache-2.0, Copyright 2014-2024 SourceGear, LLC.
+SQLite itself is public domain.
+See the licenses directory for third-party license texts.
+Windows fonts are system resources, not bundled with this program.
