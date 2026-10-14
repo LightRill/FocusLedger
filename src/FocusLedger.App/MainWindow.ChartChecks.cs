@@ -40,10 +40,10 @@ public partial class MainWindow
                 capture("chart-detail-" + period + ".png");
             }
             SetPeriodForCheck(DateTime.Today.AddDays(-1), Period.Day); Flush();
-            var empty = buckets.FindIndex(b => b.ObservedSeconds == 0);
+            var empty = buckets.FindIndex(b => b.Seconds == 0);
             UpdateTrendDetail(new Point((empty + .5) * TrendCanvas.ActualWidth / buckets.Count, 117));
             Require(ChartDetail.Visibility == Visibility.Collapsed, "empty bar never triggers");
-            ShowChartDetail("边界检查", 60, 60, new Point(ChartOverlay.ActualWidth - 2, ChartOverlay.ActualHeight - 2)); Flush();
+            ShowChartDetail("边界检查", 60, new Point(ChartOverlay.ActualWidth - 2, ChartOverlay.ActualHeight - 2)); Flush();
             Require(Canvas.GetLeft(ChartDetail) + ChartDetail.ActualWidth <= ChartOverlay.ActualWidth - 11 &&
                 Canvas.GetTop(ChartDetail) + ChartDetail.ActualHeight <= ChartOverlay.ActualHeight - 11, "tooltip fits window edges");
             foreach (var theme in new[] { "Forest", "Ocean", "Dark" })

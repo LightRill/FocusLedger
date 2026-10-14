@@ -7,9 +7,9 @@ internal static class ThemeManager
 {
     internal static event Action? Changed;
     internal static Brush Brush(string key) => (Brush)Application.Current.Resources[key];
-    internal static Brush Heat(double seconds, bool observed)
+    internal static Brush Heat(double seconds)
     {
-        if (!observed) return Brush("Line");
+        if (seconds <= 0) return Brush("Line");
         var weight = seconds <= 0 ? .08 : seconds < 3600 ? .25 : seconds < 10800 ? .45 : seconds < 21600 ? .7 : 1;
         var front = ((SolidColorBrush)Brush("Accent")).Color;
         var back = ((SolidColorBrush)Brush("Surface")).Color;

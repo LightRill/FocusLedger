@@ -19,7 +19,7 @@ tests.Add(("Ten minutes idle retains exactly first three minutes", () =>
 {
     var engine = new TrackingEngine(); List<Segment> all = [];
     for (int i = 0; i <= 600; i++) all.AddRange(engine.Push(Sample(i, idle: i, kind: i < 180 ? SegmentKind.Active : SegmentKind.Idle)));
-    Equal(180, Effective(all)); Equal(420, all.Where(s => s.Kind == SegmentKind.Idle).Sum(s => s.Seconds));
+    Equal(180, Effective(all)); True(all.All(s => s.IsEffective), "idle time is not emitted");
 }));
 tests.Add(("Reading pauses under threshold are retained", () =>
 {
@@ -30,7 +30,7 @@ tests.Add(("Reading pauses under threshold are retained", () =>
 tests.Add(("Threshold within sample splits precisely", () =>
 {
     var engine = new TrackingEngine(); engine.Push(Sample(0, idle: 179.6)); var result = engine.Push(Sample(1, idle: 180.6, kind: SegmentKind.Idle));
-    Equal(.4, Effective(result)); Equal(.6, result.Single(s => s.Kind == SegmentKind.Idle).Seconds);
+    Equal(.4, Effective(result)); Equal(1, result.Count); True(result[0].IsEffective);
 }));
 tests.Add(("Switching apps cannot double count", () =>
 {
@@ -59,6 +59,22 @@ tests.Add(("Resuming from idle never fills the preceding idle second", () =>
     var engine = new TrackingEngine(); engine.Push(Sample(0, idle: 200, kind: SegmentKind.Idle));
     Equal(0, Effective(engine.Push(Sample(1)))); Equal(1, Effective(engine.Push(Sample(2))));
 }));
+tests.Add(("Only effective intervals are persisted and inactive gaps are not bridged", () =>
+{
+    foreach (var kind in new[] { SegmentKind.Idle, SegmentKind.Excluded, SegmentKind.Paused, SegmentKind.Locked, SegmentKind.Unavailable })
+    {
+        using var db = Db("effective-only-" + kind);
+        var engine = new TrackingEngine();
+        foreach (var sample in new[] { Sample(0), Sample(1), Sample(2, kind: kind), Sample(3, kind: kind), Sample(4), Sample(5) })
+            foreach (var segment in engine.Push(sample)) db.Append(segment);
+        var records = db.ReadAll();
+        True(records.All(s => s.IsEffective)); Equal(2, records.Count); Equal(3, Effective(records));
+        Equal(2, (records[1].Start - records[0].End).TotalSeconds);
+        db.Append(new(0, origin.AddSeconds(5), origin.AddSeconds(100), "", kind));
+        Equal(2, db.ReadAll().Count); Equal(3, Effective(db.ReadAll()));
+    }
+}));
+
 tests.Add(("Continuous samples merge in SQLite", () =>
 {
     using var db = Db("merge");

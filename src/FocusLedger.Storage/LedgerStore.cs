@@ -60,6 +60,7 @@ public sealed class LedgerStore : IDisposable
 
     public void Append(Segment segment)
     {
+        if (!segment.IsEffective) return;
         segment = MillisecondPrecision(segment);
         if (segment.End <= segment.Start) return;
         using var tx = connection.BeginTransaction();

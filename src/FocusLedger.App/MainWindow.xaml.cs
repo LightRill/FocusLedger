@@ -113,7 +113,6 @@ public partial class MainWindow : Window
             TotalText.Text = DurationText.Format(total);
             AutoText.Text = DurationText.Format(visible.Where(s => s.Kind == SegmentKind.Active).Sum(s => s.Seconds));
             ManualText.Text = DurationText.Format(visible.Where(s => s.Kind == SegmentKind.Manual).Sum(s => s.Seconds));
-            CoverageText.Text = clipped.Count == 0 ? "该周期尚无采集或补记记录" : $"有记录覆盖 {DurationText.Format(clipped.Where(s => s.Kind != SegmentKind.Unavailable).Sum(s => s.Seconds))}";
             LongestText.Text = "最长连续投入 " + DurationText.Format(Reports.LongestEffective(visible));
             buckets = Reports.Buckets(clipped, range, CurrentPeriod, zone);
             ChartHint.Text = CurrentPeriod switch { Period.Day => "每小时", Period.Year => "每月", _ => "每天" };
@@ -187,7 +186,7 @@ public partial class MainWindow : Window
             var b = buckets[i];
             var barHeight = b.Seconds / max * (chartHeight - 12);
             var bar = new Border { Width = Math.Max(3, unit * .58), Height = Math.Max(3, barHeight), CornerRadius = new CornerRadius(3, 3, 0, 0),
-                Background = ThemeManager.Brush(b.Seconds > 0 ? "Accent" : b.ObservedSeconds > 0 ? "Soft" : "Line") };
+                Background = ThemeManager.Brush(b.Seconds > 0 ? "Accent" : "Line") };
             Canvas.SetLeft(bar, i * unit + unit * .21); Canvas.SetTop(bar, chartHeight - bar.Height); TrendCanvas.Children.Add(bar);
             trendBars.Add((i, new Rect(Canvas.GetLeft(bar), Canvas.GetTop(bar), bar.Width, bar.Height)));
             if (buckets.Count <= 12 || i % (buckets.Count > 25 ? 5 : 3) == 0)
@@ -254,12 +253,11 @@ public partial class MainWindow : Window
             var date = first.AddDays(day);
             var parts = Reports.Clip(all, Reports.ToUtc(date, zone), Reports.ToUtc(date.AddDays(1), zone));
             var seconds = parts.Where(s => s.IsEffective).Sum(s => s.Seconds);
-            var observedSeconds = parts.Where(s => s.Kind != SegmentKind.Unavailable).Sum(s => s.Seconds);
             var cell = new Border { Width = cellWidth, Height = cellHeight, CornerRadius = new CornerRadius(2),
-                Background = ThemeManager.Heat(seconds, observedSeconds > 0) };
+                Background = ThemeManager.Heat(seconds) };
             cell.MouseMove += (_, e) =>
             {
-                if (seconds > 0) ShowChartDetail(date.ToString("yyyy 年 M 月 d 日"), seconds, observedSeconds, e.GetPosition(ChartOverlay));
+                if (seconds > 0) ShowChartDetail(date.ToString("yyyy 年 M 月 d 日"), seconds, e.GetPosition(ChartOverlay));
                 else HideChartDetail();
             };
             cell.MouseLeave += (_, _) => HideChartDetail();

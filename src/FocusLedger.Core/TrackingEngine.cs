@@ -18,15 +18,14 @@ public sealed class TrackingEngine
         var wallMs = (current.Utc - last.Utc).TotalMilliseconds;
         // Never bill sleep, a stalled collector, clock jumps or backwards time.
         if (elapsed <= 0 || elapsed > MaximumGapMs || wallMs <= 0 || Math.Abs(wallMs - elapsed) > 1500) return [];
-        if (last.Kind != SegmentKind.Active)
-            return [new(0, last.Utc, current.Utc, last.App, last.Kind)];
+        // Non-work states only reset the sampling baseline; never persist runtime coverage.
+        if (last.Kind != SegmentKind.Active) return [];
 
         var remaining = Math.Max(0, last.TimeoutSeconds - last.IdleSeconds);
         // Preserve the exact observed endpoint; floating-point round trips can create tiny idle tails.
         var end = remaining >= wallMs / 1000 ? current.Utc : last.Utc.AddSeconds(remaining);
         List<Segment> result = [];
         if (end > last.Utc) result.Add(new(0, last.Utc, end, last.App, SegmentKind.Active));
-        if (end < current.Utc) result.Add(new(0, end, current.Utc, last.App, SegmentKind.Idle));
         return result;
     }
 }

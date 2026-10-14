@@ -2,7 +2,7 @@ namespace FocusLedger.Core;
 
 public enum Period { Day, Week, Month, Year }
 public sealed record PeriodRange(DateTimeOffset Start, DateTimeOffset End, string Label);
-public sealed record SummaryBucket(string Label, DateTimeOffset Start, double Seconds, double ObservedSeconds);
+public sealed record SummaryBucket(string Label, DateTimeOffset Start, double Seconds);
 
 public static class Reports
 {
@@ -44,7 +44,7 @@ public static class Reports
             var endUtc = ToUtc(next, zone);
             var parts = Clip(all, startUtc, endUtc);
             result.Add(new(period switch { Period.Day => cursor.ToString("HH"), Period.Year => $"{cursor.Month}月", _ => cursor.ToString("MM/dd") },
-                startUtc, parts.Where(s => s.IsEffective).Sum(s => s.Seconds), parts.Where(s => s.Kind != SegmentKind.Unavailable).Sum(s => s.Seconds)));
+                startUtc, parts.Where(s => s.IsEffective).Sum(s => s.Seconds)));
             cursor = next;
         }
         return result;

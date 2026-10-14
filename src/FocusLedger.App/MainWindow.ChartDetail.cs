@@ -26,14 +26,13 @@ public partial class MainWindow
             Period.Year => date.ToString("yyyy 年 M 月"),
             _ => date.ToString("yyyy 年 M 月 d 日")
         };
-        ShowChartDetail(title, bucket.Seconds, bucket.ObservedSeconds, TrendCanvas.TranslatePoint(point, ChartOverlay));
+        ShowChartDetail(title, bucket.Seconds, TrendCanvas.TranslatePoint(point, ChartOverlay));
     }
 
-    private void ShowChartDetail(string title, double seconds, double observedSeconds, Point pointer)
+    private void ShowChartDetail(string title, double seconds, Point pointer)
     {
         ChartDetailTitle.Text = title;
-        ChartDetailValue.Text = observedSeconds > 0 ? DurationText.Format(seconds) : "无记录";
-        ChartDetailHint.Text = observedSeconds > 0 ? $"有效投入 · 有记录覆盖 {DurationText.Format(observedSeconds)}" : "该时段没有可用记录";
+        ChartDetailValue.Text = DurationText.Format(seconds);
         ChartDetail.Visibility = Visibility.Visible;
         ChartDetail.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         var size = ChartDetail.DesiredSize;

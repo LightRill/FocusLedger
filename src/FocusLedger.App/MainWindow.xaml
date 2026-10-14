@@ -18,7 +18,7 @@
    <DockPanel>
     <StackPanel DockPanel.Dock="Bottom">
      <TextBlock Text="数据只留在这台电脑" Style="{StaticResource SidebarFooter}"/>
-     <TextBlock Text="v0.3.8 · Windows" Style="{StaticResource SidebarFooter}" Margin="0,6,0,0"/>
+     <TextBlock Text="v0.3.9 · Windows" Style="{StaticResource SidebarFooter}" Margin="0,6,0,0"/>
     </StackPanel>
     <StackPanel>
      <Image Source="Assets/focusledger.png" Width="48" Height="48" HorizontalAlignment="Left" Margin="0,0,0,18" RenderOptions.BitmapScalingMode="HighQuality"/>
@@ -46,7 +46,7 @@
     </DockPanel>
     <Grid Margin="0,0,0,20">
      <Grid.ColumnDefinitions><ColumnDefinition Width="1.2*"/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-     <Border Style="{StaticResource Card}" Background="{DynamicResource Soft}" BorderBrush="{DynamicResource Line}" Margin="0,0,12,0"><StackPanel><TextBlock Text="有效投入" Foreground="{DynamicResource Accent}"/><TextBlock x:Name="TotalText" Text="0 分 00 秒" FontSize="29" FontWeight="SemiBold" Margin="0,10,0,8"/><TextBlock x:Name="CoverageText" Text="等待记录" FontSize="11" Foreground="{DynamicResource Accent}"/></StackPanel></Border>
+     <Border Style="{StaticResource Card}" Background="{DynamicResource Soft}" BorderBrush="{DynamicResource Line}" Margin="0,0,12,0"><StackPanel><TextBlock Text="有效投入" Foreground="{DynamicResource Accent}"/><TextBlock x:Name="TotalText" Text="0 分 00 秒" FontSize="29" FontWeight="SemiBold" Margin="0,10,0,8"/></StackPanel></Border>
      <Border Grid.Column="1" Style="{StaticResource Card}" Margin="0,0,12,0"><StackPanel><TextBlock Text="自动记录" Style="{StaticResource Caption}"/><TextBlock x:Name="AutoText" FontSize="24" FontWeight="SemiBold" Margin="0,13,0,11"/><TextBlock Text="包含空闲阈值内的阅读与思考" FontSize="11" Foreground="{DynamicResource Muted}"/></StackPanel></Border>
      <Border Grid.Column="2" Style="{StaticResource Card}"><StackPanel><TextBlock Text="人工补记 / 修正" Style="{StaticResource Caption}"/><TextBlock x:Name="ManualText" FontSize="24" FontWeight="SemiBold" Margin="0,13,0,11"/><TextBlock x:Name="LongestText" FontSize="11" Foreground="{DynamicResource Muted}"/></StackPanel></Border>
     </Grid>
@@ -55,7 +55,7 @@
      <Border Style="{StaticResource Card}" Margin="0,0,12,0"><StackPanel><DockPanel><TextBlock Text="投入趋势" FontSize="15" FontWeight="SemiBold"/><TextBlock x:Name="ChartHint" Text="每小时" HorizontalAlignment="Right" Style="{StaticResource Caption}"/></DockPanel><Canvas x:Name="TrendCanvas" Height="156" Margin="0,16,0,0" SizeChanged="Chart_SizeChanged"/><TextBlock Text="灰点表示该时段没有可用记录；不等同于工作了 0 分钟。" FontSize="10" Foreground="{DynamicResource Muted}" Margin="0,8,0,0"/></StackPanel></Border>
      <Border Grid.Column="1" Style="{StaticResource Card}"><StackPanel><TextBlock Text="软件分布" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,18"/><StackPanel x:Name="AppBreakdown"/></StackPanel></Border>
     </Grid>
-    <Border x:Name="YearHeatmapCard" Style="{StaticResource Card}" Margin="0,0,0,20" Visibility="Collapsed"><StackPanel><DockPanel><TextBlock Text="一年的投入" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="每格一天 · 悬停查看时长" HorizontalAlignment="Right" Style="{StaticResource Caption}"/></DockPanel><WrapPanel x:Name="YearHeatmap" Margin="0,15,0,8"/><TextBlock Text="灰色：无记录　浅色：有记录但无有效投入　深色：有效投入较多" FontSize="11" Foreground="{DynamicResource Muted}"/></StackPanel></Border>
+    <Border x:Name="YearHeatmapCard" Style="{StaticResource Card}" Margin="0,0,0,20" Visibility="Collapsed"><StackPanel><DockPanel><TextBlock Text="一年的投入" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="每格一天 · 悬停查看时长" HorizontalAlignment="Right" Style="{StaticResource Caption}"/></DockPanel><WrapPanel x:Name="YearHeatmap" Margin="0,15,0,8"/><TextBlock Text="灰色：无有效投入记录　颜色越深，代表有效投入越多" FontSize="11" Foreground="{DynamicResource Muted}"/></StackPanel></Border>
     <Border Style="{StaticResource Card}">
      <StackPanel>
       <DockPanel Margin="0,0,0,14"><StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button Content="编辑选中" Click="Edit_Click" Padding="10,6"/><Button Content="删除选中" Click="Delete_Click" Padding="10,6" Margin="0"/></StackPanel><StackPanel><TextBlock x:Name="TimelineTitle" Text="时间明细" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="仅列有效片段；空闲和未采集区间不计入总时长。" Style="{StaticResource Caption}" Margin="0,6,0,0"/></StackPanel></DockPanel>
@@ -108,7 +108,6 @@
    <Border x:Name="ChartDetail" Visibility="Collapsed" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Line}" BorderThickness="1" CornerRadius="10" Padding="14,12" MaxWidth="290">
     <StackPanel><TextBlock x:Name="ChartDetailTitle" FontFamily="{DynamicResource AppFont}" FontSize="12" Foreground="{DynamicResource Muted}"/>
      <TextBlock x:Name="ChartDetailValue" FontFamily="{DynamicResource AppFont}" FontSize="19" FontWeight="SemiBold" Foreground="{DynamicResource Ink}" Margin="0,7,0,5"/>
-     <TextBlock x:Name="ChartDetailHint" FontFamily="{DynamicResource AppFont}" FontSize="11" Foreground="{DynamicResource Muted}" TextWrapping="Wrap"/>
     </StackPanel>
    </Border>
   </Canvas>
