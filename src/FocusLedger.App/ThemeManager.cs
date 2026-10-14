@@ -26,11 +26,14 @@ internal static class ThemeManager
             _ => ["#F3F5EF", "#FFFFFF", "#233D35", "#657C70", "#32745E", "#E5EEDF", "#DCE5D8", "#203E34", "#F4FAF5", "#B4CDBF", "#FFFFFF", "#B44444", "#D5E8DA"]
         };
         for (int i = 0; i < keys.Length; i++) Application.Current.Resources[keys[i]] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colors[i]));
+        Application.Current.Resources["ScrollGrip"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme switch { "Dark" => "#506278", "Ocean" => "#ADBFD6", _ => "#B1C5B9" }));
         // Native WPF selection/popup surfaces also follow the selected palette.
         Application.Current.Resources[SystemColors.HighlightBrushKey] = Brush("Selected");
         Application.Current.Resources[SystemColors.HighlightTextBrushKey] = Brush("Ink");
         Application.Current.Resources[SystemColors.WindowBrushKey] = Brush("Surface");
         Application.Current.Resources[SystemColors.WindowTextBrushKey] = Brush("Ink");
+        Application.Current.Resources[SystemColors.ControlBrushKey] = Brush("Page");
+        Application.Current.Resources[SystemColors.ControlTextBrushKey] = Brush("Ink");
         Changed?.Invoke();
     }
     internal static Drawing.Color Native(string key)

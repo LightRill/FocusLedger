@@ -1,6 +1,6 @@
 # FocusLedger · 专注时账
 
-Windows 本地学习工作时间记录工具，当前版本 v0.3.0。默认统计 VS Code、VS Code Insiders、Codex 与 ChatGPT 桌面应用；Zotero 已预置但默认关闭。
+Windows 本地学习工作时间记录工具，当前版本 v0.3.1。默认统计 VS Code、VS Code Insiders、Codex 与 ChatGPT 桌面应用；Zotero 已预置但默认关闭。
 
 ## 界面预览
 
@@ -27,7 +27,7 @@ Windows 本地学习工作时间记录工具，当前版本 v0.3.0。默认统�
 
 左侧的“概览”“设置”“备份数据”切换主窗口右侧内容。补记和编辑时间也在右侧完成。文件与文件夹选择、删除确认仍使用 Windows 对话框。
 
-在“设置 → 外观主题”中选择 **森野、晴空、夜航**，点击保存后生效并在下次启动保留。使用 Windows 自带的微软雅黑 UI，无需下载字体。托盘菜单跟随主题，悬停显示当前采集状态。
+在“设置 → 外观主题”中选择 **森野、晴空、夜航**，点击保存后生效并在下次启动保留。使用 Windows 自带的微软雅黑 UI，无需下载字体。标题栏、页面及表格滚动条、托盘菜单均跟随主题。标题栏支持拖动、双击最大化／还原；关闭仍隐藏到托盘，悬停托盘图标显示当前采集状态。
 
 ## 自定义空闲阈值
 
@@ -140,3 +140,7 @@ Copyright (C) 2026 LightRill。项目采用 **GPL-3.0-only**，详见 [LICENSE](
 项目仓库：https://github.com/LightRill/FocusLedger
 
 本地发布目录是依赖 .NET 的便携程序目录；当前仓库提供源码，尚未发布正式安装包或带签名的发行版本。
+
+## 图标源文件
+
+应用使用本项目原创的青绿色时间环图标。SVG、PNG 和 ICO 位于 src/FocusLedger.App/Assets，随项目采用 GPL-3.0-only。ICO 包含 16、20、24、32、40、48、64、128、256 像素的独立图层。修改 SVG 后，可在 Windows PowerShell 中运行 tools/Generate-Icon.ps1，使用系统 WPF 生成 PNG 和 ICO，无需额外依赖。

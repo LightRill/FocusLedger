@@ -26,6 +26,9 @@ public partial class MainWindow : Window
     {
         this.store = store; this.tracker = tracker; this.settingsPath = settingsPath; this.dataDirectory = dataDirectory;
         InitializeComponent();
+        StateChanged += (_, _) => UpdateWindowState();
+        SizeChanged += (_, _) => UpdateMaximizedInsets();
+        DpiChanged += (_, _) => Dispatcher.BeginInvoke(new Action(UpdateMaximizedInsets));
         DateSelect.SelectedDate = DateTime.Today;
         initialized = true;
         ThemeManager.Changed += Refresh;
@@ -47,6 +50,37 @@ public partial class MainWindow : Window
                 DateSelect.SelectedDate = DateTime.Today;
             Refresh();
         }
+    }
+
+    private void Minimize_Click(object sender, RoutedEventArgs e) => SystemCommands.MinimizeWindow(this);
+    private void Maximize_Click(object sender, RoutedEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized) SystemCommands.RestoreWindow(this);
+        else SystemCommands.MaximizeWindow(this);
+    }
+    private void Close_Click(object sender, RoutedEventArgs e) => Close();
+    private void UpdateWindowState()
+    {
+        var maximized = WindowState == WindowState.Maximized;
+        MaximizeButton.ToolTip = maximized ? "还原" : "最大化";
+        MaximizeGlyph.Data = Geometry.Parse(maximized ? "M 0 3 H 7 V 10 H 0 Z M 3 3 V 0 H 10 V 7 H 7" : "M 0 0 H 10 V 10 H 0 Z");
+        Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(UpdateMaximizedInsets));
+    }
+    private void UpdateMaximizedInsets()
+    {
+        if (WindowState != WindowState.Maximized) { WindowLayout.Margin = new Thickness(0); return; }
+        var handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+        if (handle == 0 || PresentationSource.FromVisual(this) is null) return;
+        // Windows keeps an invisible resize frame outside the work area when maximized.
+        // Convert the actual overhang to DIPs so content stays inside on every monitor/DPI.
+        var work = System.Windows.Forms.Screen.FromHandle(handle).WorkingArea;
+        var topLeft = PointToScreen(new Point(0, 0));
+        var bottomRight = PointToScreen(new Point(ActualWidth, ActualHeight));
+        var dpi = VisualTreeHelper.GetDpi(this);
+        WindowLayout.Margin = new Thickness(Math.Max(0, (work.Left - topLeft.X) / dpi.DpiScaleX),
+            Math.Max(0, (work.Top - topLeft.Y) / dpi.DpiScaleY),
+            Math.Max(0, (bottomRight.X - work.Right) / dpi.DpiScaleX),
+            Math.Max(0, (bottomRight.Y - work.Bottom) / dpi.DpiScaleY));
     }
 
     internal void ChangeDataSource(LedgerStore nextStore, string nextSettingsPath, string nextDataDirectory)

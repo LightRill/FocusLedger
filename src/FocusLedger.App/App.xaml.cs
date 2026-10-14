@@ -288,6 +288,7 @@ public partial class App : Application
             ApplySettings(reset, DataDirectory, false);
             if (Application.Current.Windows.Count != 1) throw new Exception("Page navigation opened extra windows.");
             SetupTray(false);
+            ChromeChecks.Run(window);
             var nativeSample = WindowsActivity.Capture(tracker.Settings, false, false);
             tracker.TogglePause();
             var oldDatabase = store!.DatabasePath;
@@ -302,7 +303,7 @@ public partial class App : Application
             ApplySettings(changedSettings, checkRoot, true);
             if (!DataLocation.Same(DataDirectory, checkRoot) || tracker.Settings.DefaultIdleMinutes != 3)
                 throw new InvalidOperationException("Switching to existing data failed.");
-            File.WriteAllText(Path.Combine(checkRoot, "self-check.txt"), $"PASS\nDatabase integrity: {store.IntegrityCheck()}\nNative capture: {nativeSample.Kind}\nUI: inline overview, settings, themes, backup, manual entry rendered; three palettes; settings save and backup verified; single window; custom tray icon loaded\nData migration and switching existing ledger passed\nNo tracking timer started\n");
+            File.WriteAllText(Path.Combine(checkRoot, "self-check.txt"), $"PASS\nDatabase integrity: {store.IntegrityCheck()}\nNative capture: {nativeSample.Kind}\nUI: inline overview, settings, themes, backup, manual entry rendered; three palettes; settings save and backup verified; single window; custom tray icon loaded\nChrome: caption and resize hit tests, minimize/maximize/restore/hide, themed scrollbar page-down and mouse wheel passed\nData migration and switching existing ledger passed\nNo tracking timer started\n");
             window.AllowClose = true;
             Shutdown(0);
         }
